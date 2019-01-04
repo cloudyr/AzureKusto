@@ -46,7 +46,7 @@ op <- function(name, dots = list(), args = list())
 #' @export
 infix <- function(f)
 {
-    assertthat::assert_that(rlang::is_string(f))
+    assertthat::assert_that(is_string(f))
     function(x, y)
     {
         paste(x, f, y, collapse=" ")
@@ -56,7 +56,7 @@ infix <- function(f)
 #' @export
 prefix <- function(f)
 {
-    assertthat::assert_that(rlang::is_string(f))
+    assertthat::assert_that(is_string(f))
     function(...)
     {
         arglist <- paste(..., sep = ", ")
@@ -65,8 +65,8 @@ prefix <- function(f)
 }
 
 #' @export
-operator_env <- rlang::child_env(
-  .parent = rlang::empty_env(),
+operator_env <- child_env(
+  .parent = empty_env(),
   `!=`    = infix("!="),
   `==`    = infix("=="),
   `<`     = infix("<"),
@@ -83,21 +83,21 @@ operator_env <- rlang::child_env(
 
 kql_env <- function(expr, vars)
 {
-    data_env <- rlang::as_environment(rlang::set_names(vars))
+    data_env <- as_environment(set_names(vars))
 
     calls <- all_calls(expr)
-    call_list <- purrr::map(rlang::set_names(calls), unknown_op)
-    call_env <- rlang::as_environment(call_list, parent = data_env)
+    call_list <- purrr::map(set_names(calls), unknown_op)
+    call_env <- as_environment(call_list, parent = data_env)
 
-    op_env <- rlang::env_clone(operator_env, call_env)
+    op_env <- env_clone(operator_env, call_env)
     op_env
 
 }
 
 to_kql <- function(x, vars)
 {
-    expr <- rlang::enexpr(x)
-    out <- rlang::eval_bare(quote_strings(expr), kql_env(expr, vars))
+    expr <- enexpr(x)
+    out <- eval_bare(quote_strings(expr), kql_env(expr, vars))
     kql(out)
 }
 
@@ -124,7 +124,7 @@ print.kql <- function(x)
 
 expr_type <- function(x)
 {
-    if (rlang::is_syntactic_literal(x))
+    if (is_syntactic_literal(x))
     {
         if (is.character(x))
         {
@@ -198,9 +198,9 @@ quote_strings <- function(x)
 
 unknown_op <- function(op)
 {
-  rlang::new_function(
-    rlang::exprs(... = ),
-    rlang::expr({
+  new_function(
+    exprs(... = ),
+    expr({
       prefix(op)(...)
     })
   )
@@ -242,7 +242,7 @@ render.op_distinct <- function(op, vars)
 #' @export
 render.op_filter <- function(op, vars)
 {
-    dots <- purrr::map(op$dots, rlang::get_expr)
+    dots <- purrr::map(op$dots, get_expr)
     translated_dots <- purrr::map(dots, to_kql, vars = vars)
     paste0("where ", translated_dots)
 }
@@ -250,7 +250,7 @@ render.op_filter <- function(op, vars)
 render.op_mutate <- function(op, vars)
 {
     #assigned_names <- names(op$dots)
-    assigned_exprs <- purrr::map(op$dots, rlang::get_expr)
+    assigned_exprs <- purrr::map(op$dots, get_expr)
     vars <- append(vars, names(assigned_exprs))
     stmts <- purrr::map(assigned_exprs, to_kql, vars = vars)
     pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))

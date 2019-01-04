@@ -24,7 +24,6 @@ Imports:
     bit64,
     AzureRMR (>= 1.0.0.9000),
     rappdirs,
-    dbplyr,
     dplyr,
     purrr,
     tidyselect (>= 0.2.4)
