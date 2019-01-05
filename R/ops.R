@@ -1,85 +1,164 @@
 #' @export
-select.tbl <- function(.data, ...)
+op_base <- function(x, vars, class = character())
 {
-    dots <- quos(...)
-    add_op("select", .data, dots = dots)
+    stopifnot(is.character(vars))
+
+    structure(
+        list(
+            x = x,
+            vars = vars
+        ),
+        class = c(paste0("op_base_", class), "op_base", "op")
+    )
 }
 
-distinct.tbl <- function(.data, ...)
+op_base_local <- function(df)
 {
-    dots <- quos(...)
-    add_op("distinct", .data, dots = dots)
-}
-
-filter.tbl <- function(.data, ...)
-{
-    dots <- quos(...)
-    add_op("filter", .data, dots = dots)
-}
-
-mutate.tbl <- function(.data, ...)
-{
-    dots <- quos(..., .named=TRUE)
-    add_op("mutate", .data, dots = dots)
+    op_base(df, names(df), class = "local")
 }
 
 #' @export
-add_op <- function(name, .data, dots = list(), args = list())
+#' @rdname lazy_ops
+op_single <- function(name, x, dots = list(), args = list())
 {
-    .data$ops <- append(.data$ops, list(op(name, dots = dots, args = args)))
-    return(.data)
+    structure(
+        list(
+            name = name,
+            x = x,
+            dots = dots,
+            args = args
+        ),
+        class = c(paste0("op_", name), "op_single", "op")
+    )
 }
 
 #' @export
-op <- function(name, dots = list(), args = list())
+#' @rdname lazy_ops
+add_op_single <- function(name, .data, dots = list(), args = list())
 {
-  structure(
-    list(
-      name = name,
-      dots = dots,
-      args = args
-    ),
-    class = c(paste0("op_", name), "op")
-  )
+    .data$ops <- op_single(name, x = .data$ops, dots = dots, args = args)
+    .data
 }
 
 #' @export
-infix <- function(f)
+#' @rdname lazy_ops
+op_grps <- function(op) UseMethod("op_grps")
+#' @export
+op_grps.op_base <- function(op) character()
+#' @export
+op_grps.op_group_by <- function(op) {
+    if (isTRUE(op$args$add)) {
+        union(op_grps(op$x), names(op$dots))
+    } else {
+        names(op$dots)
+    }
+}
+#' @export
+op_grps.op_ungroup <- function(op)
 {
-    assertthat::assert_that(is_string(f))
-    function(x, y)
-    {
-        paste(x, f, y, collapse=" ")
+    character()
+}
+#' @export
+op_grps.op_summarise <- function(op)
+{    
+    grps <- op_grps(op$x)
+    if (length(grps) == 1) {
+        character()
+    } else {
+        grps[-length(grps)]
     }
 }
 
 #' @export
-prefix <- function(f)
+op_grps.op_rename <- function(op)
 {
-    assertthat::assert_that(is_string(f))
-    function(...)
-    {
-        arglist <- paste(..., sep = ", ")
-        paste0(f, "(", arglist ,")")
-    }
+    names(tidyselect::vars_rename(op_grps(op$x), !!! op$dots, .strict = FALSE))
 }
 
 #' @export
-operator_env <- child_env(
-  .parent = empty_env(),
-  `!=`    = infix("!="),
-  `==`    = infix("=="),
-  `<`     = infix("<"),
-  `<=`    = infix("<="),
-  `>`     = infix(">"),
-  `>=`    = infix(">="),
-  `+`     = infix("+"),
-  `-`     = infix("-"),
-  `*`     = infix("*"),
-  `/`     = infix("/"),
-  sum     = prefix("sum")
-  # TODO: add more operators / function names
-)
+op_grps.op_single <- function(op)
+{
+    op_grps(op$x)
+}
+#' @export
+op_grps.op_double <- function(op)
+{
+    op_grps(op$x)
+}
+
+#' @export
+op_grps.tbl_lazy <- function(op)
+{
+    op_grps(op$ops)
+}
+
+
+#' @export
+#' @rdname lazy_ops
+op_vars <- function(op) UseMethod("op_vars")
+
+#' @export
+op_vars.op_base <- function(op)
+{
+    op$vars
+}
+#' @export
+op_vars.op_select <- function(op)
+{
+    names(tidyselect::vars_select(op_vars(op$x), !!! op$dots, .include = op_grps(op$x)))
+}
+
+#' @export
+op_vars.op_rename <- function(op)
+{
+    names(rename_vars(op_vars(op$x), !!! op$dots))
+}
+#' @export
+op_vars.op_summarise <- function(op)
+{
+    c(op_grps(op$x), names(op$dots))
+}
+#' @export
+op_vars.op_distinct <- function(op)
+{
+    if (length(op$dots) == 0) {
+        op_vars(op$x)
+    } else  {
+                                        #c(op_grps(op$x), names(op$dots))
+        unique(c(op_vars(op$x), names(op$dots)))
+    }
+}
+#' @export
+op_vars.op_mutate <- function(op)
+{
+    unique(c(op_vars(op$x), names(op$dots)))
+}
+#' @export
+op_vars.op_single <- function(op)
+{
+    op_vars(op$x)
+}
+#' @export
+op_vars.op_join <- function(op)
+{
+    op$args$vars$alias
+}
+#' @export
+op_vars.op_semi_join <- function(op)
+{
+    op_vars(op$x)
+}
+#' @export
+op_vars.op_set_op <- function(op)
+{
+    union(op_vars(op$x), op_vars(op$y))
+}
+#' @export
+op_vars.tbl_lazy <- function(op)
+{
+    op_vars(op$ops)
+}
+
 
 kql_env <- function(expr, vars)
 {
@@ -91,35 +170,6 @@ kql_env <- function(expr, vars)
 
     op_env <- env_clone(operator_env, call_env)
     op_env
-
-}
-
-to_kql <- function(x, vars)
-{
-    expr <- enexpr(x)
-    out <- eval_bare(quote_strings(expr), kql_env(expr, vars))
-    kql(out)
-}
-
-kql_quote <- function(x, quote="'")
-{
-  if (length(x) == 0) {
-    return(x)
-  }
-
-  y <- gsub(quote, paste0(quote, quote), x, fixed = TRUE)
-  y <- paste0(quote, y, quote)
-  y[is.na(x)] <- "NULL"
-  names(y) <- names(x)
-
-  y
-}
-
-kql <- function(x) structure(x, class = "kql")
-
-print.kql <- function(x)
-{
-    cat("<KQL> ", x, "\n", sep = "")
 }
 
 expr_type <- function(x)
@@ -198,24 +248,15 @@ quote_strings <- function(x)
 
 unknown_op <- function(op)
 {
-  new_function(
-    exprs(... = ),
-    expr({
-      prefix(op)(...)
-    })
-  )
+    new_function(
+        exprs(... = ),
+        expr({
+            prefix(op)(...)
+        })
+    )
 }
 
-#' @export
-show_query.tbl <- function(tbl, ...)
-{
-    ops <- unlist(lapply(tbl$ops, function(x) render(x, names(tbl$table))))
-    tblname <- sprintf("database(%s).%s", tbl$db$db, tbl$name)
-    q_str <- paste(ops, collapse = "\n| ")
-    q_str <- paste(tblname, q_str, sep="\n| ")
-    cat(q_str, "\n")
-    invisible(q_str)
-}
+
 
 #' @export
 render <- function(query, con = NULL, ...)
