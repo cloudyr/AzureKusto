@@ -32,8 +32,10 @@ kql_build.op_select <- function(op, con, ...)
 #' @export
 kql_build.op_filter <- function(op, con, ...)
 {
-    cols <- tidyselect::vars_select(op$vars, !!! op$dots)
-    dots <- purrr::map(op$dots, get_expr)
+    dots <- mapply(get_expr, op$dots)
+    dot_names <- mapply(all_names, dots)
+    cols <- tidyselect::vars_select(op$vars, !!! dot_names)
+    
     translated_dots <- purrr::map(dots, translate_kql)
     built_dots <- purrr::map(translated_dots, build_kql)
     clauses <- purrr::map(built_dots, kql_clause_filter)

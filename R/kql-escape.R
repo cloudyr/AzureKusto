@@ -21,7 +21,7 @@
 #'
 #' # String vs known kql vs. kql identifier
 #' escape("X")
-#' escape(sql("X"))
+#' escape(kql("X"))
 #' escape(ident("X"))
 #'
 #' # Escaping is idempotent

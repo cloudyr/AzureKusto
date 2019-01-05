@@ -265,22 +265,6 @@ render <- function(query, con = NULL, ...)
 }
 
 #' @export
-render.op_select <- function(op, vars)
-{
-    cols <- tidyselect::vars_select(vars, !!! op$dots)
-    cols <- paste(cols, collapse=", ")
-    paste0("project ", cols)
-}
-
-#' @export
-render.op_distinct <- function(op, vars)
-{
-    cols <- tidyselect::vars_select(vars, !!! op$dots)
-    cols <- paste(cols, collapse=", ")
-    paste0("distinct ", cols)
-}
-
-#' @export
 render.op_filter <- function(op, vars)
 {
     dots <- purrr::map(op$dots, get_expr)

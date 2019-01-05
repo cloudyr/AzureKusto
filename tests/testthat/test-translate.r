@@ -30,14 +30,14 @@ test_that("distinct is translated to distinct",
 test_that("kql_infix formats correctly",
 {
     fn <- kql_infix("==")
-    expr <- fn("foo", "bar")
+    expr <- fn(translate_kql(foo), translate_kql(bar))
     expect_equal(as.character(expr), "foo == bar")
 })
 
 test_that("kql_prefix formats correctly",
 {
     fn <- kql_prefix("sum")
-    expr <- fn("foo", "bar", "baz")
+    expr <- fn(translate_kql(foo), translate_kql(bar), translate_kql(baz))
     expect_equal(as.character(expr), "sum(foo, bar, baz)")
 })
 
@@ -79,7 +79,8 @@ test_that("filter errors on missing symbols", {
     q <- tbl_iris %>%
         filter(Speciess == "setosa")
 
-    expect_error(show_query(q), "object 'Speciess' not found")
+    expect_error(show_query(q), "Unknown column `Speciess` ")
+    #expect_error(show_query(q), "object 'Speciess' not found")
 })
 
 test_that("select and filter can be combined", {
