@@ -256,7 +256,6 @@ base_scalar <- kql_translator(
         if (isTRUE(all.equal(base, exp(1))))
         {
             prefix("log")
-          
         } else if (is.TRUE(all.equal(base, 2)))
         {
             prefix("log2")
@@ -342,7 +341,11 @@ base_scalar <- kql_translator(
         )}
 )
 
-kql <- function(x) structure(x, class = "kql")
+kql <- function(...)
+{
+    x <- c_character(...)
+    structure(x, class = c("kql", "character"))
+}
 
 print.kql <- function(x)
 {
@@ -368,6 +371,7 @@ base_agg <- kql_translator(
     n_distinct = kql_aggregate("dcount")
 )
 
-dots <- function(...) {
-  eval_bare(substitute(alist(...)))
+dots <- function(...)
+{
+    eval_bare(substitute(alist(...)))
 }

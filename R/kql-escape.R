@@ -37,12 +37,13 @@ escape <- function(x, parens = NA, collapse = " ", con = NULL)
 escape.ident <- function(x, parens = FALSE, collapse = ", ", con = NULL)
 {
     y <- kql_escape_ident(x)
-    kql_vector(names_to_as(y, names2(x), con = con), parens, collapse)
+    kql_vector(y, parens, collapse)
 }
 
 #' @export
-escape.ident_q <- function(x, parens = FALSE, collapse = ", ", con = NULL) {
-  kql_vector(names_to_as(x, names2(x), con = con), parens, collapse)
+escape.ident_q <- function(x, parens = FALSE, collapse = ", ", con = NULL)
+{
+    kql_vector(x, parense, collapse)
 }
 
 #' @export
@@ -70,7 +71,11 @@ escape.POSIXt <- function(x, parens = NA, collapse = ", ", con = NULL) {
 
 #' @export
 escape.character <- function(x, parens = NA, collapse = ", ", con = NULL) {
-  kql_vector(kql_escape_string(x), parens, collapse, con = con)
+    # Kusto doesn't support null strings, instead use empty string
+    out <- x
+    out[is.na(x)] <- ""
+    out[is.null(x)] <- ""
+    kql_vector(kql_escape_string(out), parens, collapse, con = con)
 }
 
 #' @export
@@ -79,7 +84,7 @@ escape.double <- function(x, parens = NA, collapse = ", ", con = NULL)
   #  out <- ifelse(is.wholenumber(x), sprintf("%.1f", x), as.character(x))
     out <- as.character(x)
   # Special values
-    out[is.na(x)] <- "null"
+    out[is.na(x)] <- "real(null)"
     inf <- is.infinite(x)
     out[inf & x > 0] <- "'real(+inf)'"
     out[inf & x < 0] <- "'real(-inf)'"
@@ -118,34 +123,23 @@ escape.list <- function(x, parens = TRUE, collapse = ", ", con = NULL) {
 
 #' @export
 #' @rdname escape
-kql_vector <- function(x, parens = NA, collapse = " ", con = NULL) {
-  if (length(x) == 0) {
-    if (!is.null(collapse)) {
-      return(if (isTRUE(parens)) kql("()") else kql(""))
-    } else {
-      return(kql())
+kql_vector <- function(x, parens = NA, collapse = " ", con = NULL)
+{
+    if (length(x) == 0) {
+        if (!is.null(collapse)) {
+            return(if (isTRUE(parens)) kql("()") else kql(""))
+        } else {
+            return(kql())
+        }
     }
-  }
 
-  if (is.na(parens)) {
-    parens <- length(x) > 1L
-  }
+    if (is.na(parens)) {
+        parens <- length(x) > 1L
+    }
 
-  x <- names_to_as(x, con = con)
-  x <- paste(x, collapse = collapse)
-  if (parens) x <- paste0("(", x, ")")
-  kql(x)
-}
-
-names_to_as <- function(x, names = names2(x), con = NULL) {
-  if (length(x) == 0) {
-    return(character())
-  }
-
-  names_esc <- kql_escape_ident(names)
-  as <- ifelse(names == "" | names_esc == x, "", paste0(" AS ", names_esc))
-
-  paste0(x, as)
+    x <- paste(x, collapse = collapse)
+    if (parens) x <- paste0("(", x, ")")
+    kql(x)
 }
 
 #' Build a KQL string.
@@ -214,7 +208,7 @@ kql_escape_ident <- function(x)
 
 #' @export
 kql_escape_logical <- function(x) {
-  y <- as.character(x)
+  y <- tolower(as.character(x))
   y[is.na(x)] <- "null"
 
   y
