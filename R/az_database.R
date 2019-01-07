@@ -33,7 +33,10 @@ public=list(
             appId=app_id,
             stringsAsFactors=FALSE
         )
-        self$do_operation("addPrincipals", body=list(value=principals), encode="json", http_verb="POST")
+        val <- self$
+            do_operation("addPrincipals", body=list(value=principals), encode="json", http_verb="POST")$
+            value
+        do.call(rbind, lapply(val, as.data.frame))
     },
 
     remove_principals=function(name, role="User", type="User", fqn="", email="", app_id="")
@@ -47,12 +50,16 @@ public=list(
             appId=app_id,
             stringsAsFactors=FALSE
         )
-        self$do_operation("removePrincipals", body=list(value=principals), encode="json", http_verb="POST")
+        val <- self$
+            do_operation("removePrincipals", body=list(value=principals), encode="json", http_verb="POST")$
+            value
+        do.call(rbind, lapply(val, as.data.frame))
     },
 
     list_principals=function(database)
     {
-        self$do_operation("listPrincipals", http_verb="POST")
+        val <- self$do_operation("listPrincipals", http_verb="POST")$value
+        do.call(rbind, lapply(val, as.data.frame))
     },
 
     get_database_endpoint=function(tenant=NULL)
