@@ -12,7 +12,7 @@ kql_build.tbl_abstract <- function(op, con = NULL)
 {
     # only used for testing
     q <- flatten_query(op$ops)
-    built_q <- purrr::map(q, kql_build)
+    built_q <- lapply(q, kql_build)
     kql_query(built_q, src=op$src)
 }
 
@@ -36,10 +36,9 @@ kql_build.op_filter <- function(op, con, ...)
     dot_names <- mapply(all_names, dots)
     cols <- tidyselect::vars_select(op$vars, !!! dot_names)
 
-    translated_dots <- purrr::map(dots, translate_kql)
-    built_dots <- purrr::map(translated_dots, build_kql)
-    clauses <- purrr::map(built_dots, kql_clause_filter)
-
+    translated_dots <- lapply(dots, translate_kql)
+    built_dots <- lapply(translated_dots, build_kql)
+    clauses <- lapply(built_dots, kql_clause_filter)
     clauses
 }
 
@@ -59,8 +58,8 @@ kql_build.op_distinct <- function(op, con, ...)
 #' @export
 kql_build.op_mutate <- function(op, con, ...)
 {
-    assigned_exprs <- purrr::map(op$dots, rlang::get_expr)
-    stmts <- purrr::map(assigned_exprs, translate_kql)
+    assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    stmts <- mapply(translate_kql, assigned_exprs)
     pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
     kql(paste0("extend ", pieces))
 }
@@ -93,8 +92,9 @@ append_asc <- function(dot)
     }
 }
 
-#' @export
 #' Walks the tree of ops and builds a stack.
+#' 
+#' @export
 flatten_query <- function(op, ops=list())
 {
     flat_op <- op

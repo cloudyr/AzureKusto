@@ -20,7 +20,7 @@ translate_kql <- function(..., con = NULL)
     }
 
     variant <- kql_translate_env()
-    pieces <- purrr::map(dots, function(x)
+    pieces <- lapply(dots, function(x)
     {
         if (is_atomic(get_expr(x))) {
             escape(get_expr(x), con = con)

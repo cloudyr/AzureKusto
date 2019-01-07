@@ -171,7 +171,7 @@ kql_env <- function(expr, vars)
     data_env <- as_environment(set_names(vars))
 
     calls <- all_calls(expr)
-    call_list <- purrr::map(set_names(calls), unknown_op)
+    call_list <- mapply(unknown_op, set_names(calls))
     call_env <- as_environment(call_list, parent = data_env)
 
     op_env <- env_clone(operator_env, call_env)
@@ -221,7 +221,7 @@ all_calls_rec <- function(x)
                 symbol = character(),
                 call = {
                     fname <- as.character(x[[1]])
-                    children <- purrr::flatten_chr(purrr::map(as.list(x[-1]), all_calls))
+                    children <- unlist(all_calls, mapply(as.list(x[-1])))
                     c(fname, children)
                 }
                 )
@@ -273,17 +273,16 @@ render <- function(query, con = NULL, ...)
 #' @export
 render.op_filter <- function(op, vars)
 {
-    dots <- purrr::map(op$dots, get_expr)
-    translated_dots <- purrr::map(dots, to_kql, vars = vars)
+    dots <- mapply(get_expr, op$dots)
+    translated_dots <- mapply(to_kql, dots, vars = vars)
     paste0("where ", translated_dots)
 }
 
 render.op_mutate <- function(op, vars)
 {
-    #assigned_names <- names(op$dots)
-    assigned_exprs <- purrr::map(op$dots, get_expr)
+    assigned_exprs <- mapply(get_expr, op$dots)
     vars <- append(vars, names(assigned_exprs))
-    stmts <- purrr::map(assigned_exprs, to_kql, vars = vars)
+    stmts <- mapply(to_kql, assigned_exprs, vars = vars)
     pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
     paste0("extend ", pieces)
 }
