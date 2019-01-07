@@ -10,8 +10,10 @@ run_query.ade_database_endpoint <- function(database, query, ...)
 {
     server <- database$cluster$host
     token <- database$cluster$token$credentials$access_token
+    user <- database$user
+    password <- database$password
     uri <- paste0(server, "/v1/rest/query")
-    parse_query_result(call_kusto(token, uri, database$db, query, ...))
+    parse_query_result(call_kusto(token, user, password, uri, database$db, query, ...))
 }
 
 
@@ -27,8 +29,10 @@ run_command.ade_cluster_endpoint <- function(database, command, ...)
 {
     server <- database$host
     token <- database$token$credentials$access_token
+    user <- database$user
+    password <- database$password
     uri <- paste0(server, "/v1/rest/mgmt")
-    parse_command_result(call_kusto(token, uri, NULL, command, ...))
+    parse_command_result(call_kusto(token, user, password, uri, NULL, command, ...))
 }
 
 
@@ -37,12 +41,14 @@ run_command.ade_database_endpoint <- function(database, command, ...)
 {
     server <- database$cluster$host
     token <- database$cluster$token$credentials$access_token
+    user <- database$user
+    password <- database$password
     uri <- paste0(server, "/v1/rest/mgmt")
-    parse_command_result(call_kusto(token, uri, database$db, command, ...))
+    parse_command_result(call_kusto(token, user, password, uri, database$db, command, ...))
 }
 
 
-call_kusto <- function(token, uri, db, qry_cmd,
+call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     http_status_handler=c("stop", "warn", "message", "pass"))
 {
     body <- list(
@@ -51,7 +57,12 @@ call_kusto <- function(token, uri, db, qry_cmd,
     )
     if(!is.null(db))
         body <- c(body, db=db)
-    auth_str <- paste("Bearer", token)
+
+    auth_str <- if(!is.null(token))
+        paste("Bearer", token)
+    else if(!is.null(user) && !is.null(password))
+        paste("Basic", openssl::base64_encode(paste(user, password, sep=":")))
+    else stop("Must provide authentication details")
 
     res <- httr::POST(uri, httr::add_headers(Authorization=auth_str), body=body, encode="json")
     

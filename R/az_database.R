@@ -58,6 +58,6 @@ public=list(
     get_database_endpoint=function(tenant=NULL)
     {
         clus <- self$cluster$get_cluster_endpoint(tenant=tenant)
-        ade_database_endpoint(clus, basename(db$name))
+        ade_database_endpoint(clus, basename(self$name))
     }
 ))
