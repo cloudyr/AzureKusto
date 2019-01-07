@@ -35,11 +35,11 @@ kql_build.op_filter <- function(op, con, ...)
     dots <- mapply(get_expr, op$dots)
     dot_names <- mapply(all_names, dots)
     cols <- tidyselect::vars_select(op$vars, !!! dot_names)
-    
+
     translated_dots <- purrr::map(dots, translate_kql)
     built_dots <- purrr::map(translated_dots, build_kql)
     clauses <- purrr::map(built_dots, kql_clause_filter)
-    
+
     clauses
 }
 
@@ -62,7 +62,35 @@ kql_build.op_mutate <- function(op, con, ...)
     assigned_exprs <- purrr::map(op$dots, rlang::get_expr)
     stmts <- purrr::map(assigned_exprs, translate_kql)
     pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
-    paste0("extend ", pieces)
+    kql(paste0("extend ", pieces))
+}
+
+#' @export
+kql_build.op_arrange <- function(op, con, ...)
+{
+    dots <- mapply(append_asc, op$dots)
+    order_vars <- translate_kql(!!! dots)
+    build_kql("order by ", build_kql(escape(order_vars, collapse = ", ", con = con)))
+}
+
+append_asc <- function(dot)
+{
+    if (class(dot[[2]]) == "name")
+    {
+        dot[[2]] <- call2(expr(asc), dot[[2]])
+    }
+    else if (class(dot[[2]]) == "call")
+    {
+        if (dot[[2]][[1]] != expr("desc"))
+        {
+            dot[[2]] <- call2(expr(asc), dot[[2]])
+        } else
+        {
+            dot
+        }
+    } else {
+        dot
+    }
 }
 
 #' @export
@@ -72,7 +100,7 @@ flatten_query <- function(op, ops=list())
     flat_op <- op
     flat_op$x <- NULL
     flat_op$vars <- op_vars(op)
-    
+
     if (length(ops) == 0) {
         new_ops <- list(flat_op)
     } else {

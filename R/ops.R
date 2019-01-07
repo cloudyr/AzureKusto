@@ -60,7 +60,7 @@ op_grps.op_ungroup <- function(op)
 }
 #' @export
 op_grps.op_summarise <- function(op)
-{    
+{
     grps <- op_grps(op$x)
     if (length(grps) == 1) {
         character()
@@ -128,31 +128,37 @@ op_vars.op_distinct <- function(op)
         unique(c(op_vars(op$x), names(op$dots)))
     }
 }
+
 #' @export
 op_vars.op_mutate <- function(op)
 {
     unique(c(op_vars(op$x), names(op$dots)))
 }
+
 #' @export
 op_vars.op_single <- function(op)
 {
     op_vars(op$x)
 }
+
 #' @export
 op_vars.op_join <- function(op)
 {
     op$args$vars$alias
 }
+
 #' @export
 op_vars.op_semi_join <- function(op)
 {
     op_vars(op$x)
 }
+
 #' @export
 op_vars.op_set_op <- function(op)
 {
     union(op_vars(op$x), op_vars(op$y))
 }
+
 #' @export
 op_vars.tbl_lazy <- function(op)
 {

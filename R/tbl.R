@@ -41,15 +41,22 @@ mutate.tbl_abstract <- function(.data, ...)
     add_op_single("mutate", .data, dots = dots)
 }
 
+arrange.tbl_abstract <- function(.data, ...)
+{
+    dots <- quos(...)
+    names(dots) <- NULL
+    add_op_single("arrange", .data, dots = dots)
+}
+
 simulate_ade <- function()
 {
-  structure(
-      list(
-          db = "local_df",
-          cluster = "local_df"
-      ),
-    class = "ade_database_endpoint"
-  )
+    structure(
+        list(
+            db = "local_df",
+            cluster = "local_df"
+        ),
+        class = "ade_database_endpoint"
+    )
 }
 
 #' @export
