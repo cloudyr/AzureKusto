@@ -62,9 +62,18 @@ public=list(
         do.call(rbind, lapply(val, as.data.frame))
     },
 
-    get_database_endpoint=function(tenant=NULL)
+    get_query_endpoint=function(tenant=NULL, user=NULL, pwd=NULL)
     {
-        clus <- self$cluster$get_cluster_endpoint(tenant=tenant)
-        ade_database_endpoint(clus, basename(self$name))
+        # basicauth not (yet) exposed for customer-created clusters
+        if(!is.null(user) && !is.null(pwd))
+            stop("Basic user authentication not supported")
+
+        if(is.null(tenant))
+            tenant <- self$cluster$get_default_tenant()
+
+        token <- self$cluster$get_token(tenant)
+        server <- self$cluster$properties$queryUri
+        database <- basename(self$name)
+        ade_query_endpoint(server=server, database=database, tenantid=tenant, fed=TRUE, .azure_token=token)
     }
 ))

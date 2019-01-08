@@ -8,12 +8,12 @@ run_query <- function(database, ...)
 #' @export
 run_query.ade_database_endpoint <- function(database, query, ...)
 {
-    server <- database$cluster$host
-    token <- database$cluster$token$credentials$access_token
+    server <- database$server
+    token <- database$token$credentials$access_token
     user <- database$user
-    password <- database$password
+    password <- database$pwd
     uri <- paste0(server, "/v1/rest/query")
-    parse_query_result(call_kusto(token, user, password, uri, database$db, query, ...))
+    parse_query_result(call_kusto(token, user, password, uri, database$database, query, ...))
 }
 
 
@@ -25,26 +25,14 @@ run_command <- function(database, ...)
 
 
 #' @export
-run_command.ade_cluster_endpoint <- function(database, command, ...)
-{
-    server <- database$host
-    token <- database$token$credentials$access_token
-    user <- database$user
-    password <- database$password
-    uri <- paste0(server, "/v1/rest/mgmt")
-    parse_command_result(call_kusto(token, user, password, uri, NULL, command, ...))
-}
-
-
-#' @export
 run_command.ade_database_endpoint <- function(database, command, ...)
 {
-    server <- database$cluster$host
-    token <- database$cluster$token$credentials$access_token
+    server <- database$server
+    token <- database$token$credentials$access_token
     user <- database$user
-    password <- database$password
+    password <- database$pwd
     uri <- paste0(server, "/v1/rest/mgmt")
-    parse_command_result(call_kusto(token, user, password, uri, database$db, command, ...))
+    parse_command_result(call_kusto(token, user, password, uri, database$database, command, ...))
 }
 
 
