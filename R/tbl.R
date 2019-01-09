@@ -8,7 +8,7 @@
 #' library(dplyr)
 #' df <- data.frame(x = 1, y = 2)
 #'
-#' df <- tbl_lazy(df, src = simulate_ade())
+#' df <- tbl_abstract(df, src = simulate_ade())
 #' df %>% summarise(x = sd(x)) %>% show_query()
 tbl_abstract <- function(df, src = NULL) {
   make_tbl("abstract", ops = op_base_local(df), src = src)
@@ -23,24 +23,28 @@ select.tbl_abstract <- function(.data, ...)
     add_op_single("select", .data, dots = dots)
 }
 
+#' @export
 distinct.tbl_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     add_op_single("distinct", .data, dots = dots)
 }
 
+#' @export
 filter.tbl_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     add_op_single("filter", .data, dots = dots)
 }
 
+#' @export
 mutate.tbl_abstract <- function(.data, ...)
 {
     dots <- quos(..., .named=TRUE)
     add_op_single("mutate", .data, dots = dots)
 }
 
+#' @export
 arrange.tbl_abstract <- function(.data, ...)
 {
     dots <- quos(...)
@@ -48,7 +52,38 @@ arrange.tbl_abstract <- function(.data, ...)
     add_op_single("arrange", .data, dots = dots)
 }
 
-simulate_ade <- function()
+#' @export
+group_by.tbl_abstract <- function(.data, ..., add = FALSE)
+{
+    dots <- quos(...)
+
+    if (length(dots) == 0)
+    {
+        return(.data)
+    }
+
+    groups <- group_by_prepare(.data, .dots = dots, add = add)
+    add_op_single("group_by",
+                  groups$data,
+                  dots = set_names(groups4groups, names),
+                  args = list(add = false))
+}
+
+#' @export
+ungroup.tbl_lazy <- function(.data, ...)
+{
+    add_op_single("ungroup", .data)
+}
+
+#' @export
+summarise.tbl_lazy <- function(.data, ...)
+{
+    dots <- quos(..., .named = TRUE)
+    add_op_single("summarise", .data, dots = dots)
+}
+
+#' @export
+simulate_kusto <- function()
 {
     structure(
         list(

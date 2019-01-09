@@ -1,13 +1,12 @@
 context("translate")
 library(dplyr)
 
+tbl_iris <- tibble::as.tibble(iris)
+names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
+tbl_iris <- tbl_abstract(tbl_iris, src = simulate_kusto())
+
 test_that("select is translated to project",
 {
-
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
-
     q <- tbl_iris %>%
         select(Species, SepalLength) %>%
         show_query()
@@ -17,9 +16,6 @@ test_that("select is translated to project",
 
 test_that("distinct is translated to distinct",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
     q <- tbl_iris %>%
         distinct(Species, SepalLength) %>%
         show_query()
@@ -43,10 +39,6 @@ test_that("kql_prefix formats correctly",
 
 test_that("filter is translated to where with a single expression",
 {
-
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
     q <- tbl_iris %>%
         filter(Species == "setosa")
 
@@ -58,10 +50,6 @@ test_that("filter is translated to where with a single expression",
 
 test_that("multiple arguments to filter() become multiple where clauses",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
-
     q <- tbl_iris %>%
         filter(Species == "setosa", SepalLength > 4.1)
 
@@ -73,10 +61,6 @@ test_that("multiple arguments to filter() become multiple where clauses",
 
 test_that("filter errors on missing symbols",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
-
     q <- tbl_iris %>%
         filter(Speciess == "setosa")
 
@@ -86,10 +70,6 @@ test_that("filter errors on missing symbols",
 
 test_that("select and filter can be combined",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
-
     q <- tbl_iris %>%
         filter(Species == "setosa") %>%
         select(Species, SepalLength)
@@ -102,9 +82,6 @@ test_that("select and filter can be combined",
 
 test_that("select errors on column after selected away",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
     q <- tbl_iris %>%
         select(Species) %>%
         select(SepalLength)
@@ -114,9 +91,6 @@ test_that("select errors on column after selected away",
 
 test_that("mutate translates to extend",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
     q <- tbl_iris %>%
         mutate(Species2 = Species)
 
@@ -128,9 +102,6 @@ test_that("mutate translates to extend",
 
 test_that("multiple arguments to mutate() become multiple extend clauses",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
     q <- tbl_iris %>%
         mutate(Species2 = Species, Species3 = Species2, Foo = 1 + 2)
 
@@ -149,9 +120,6 @@ test_that("sum() translated correctly",
 
 test_that("arrange() generates order by ",
 {
-    tbl_iris <- tibble::as.tibble(iris)
-    names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-    tbl_iris <- tbl_abstract(tbl_iris, src = simulate_ade())
     q <- tbl_iris %>%
         arrange(Species, desc(SepalLength))
 
@@ -159,4 +127,15 @@ test_that("arrange() generates order by ",
         show_query()
 
     expect_equal(q_str, "database(local_df).df\n| order by Species asc, SepalLength desc")
+})
+
+test_that("group_by() followed by summarize() generates summarize clause",
+{
+    q <- tbl_iris %>%
+        group_by(Species) %>%
+        summarize(MaxSepalLength = max(SepalLength))
+
+    q_str <- q %>% show_query()
+
+    expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by Species)")
 })
