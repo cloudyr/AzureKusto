@@ -8,7 +8,7 @@
 #' library(dplyr)
 #' df <- data.frame(x = 1, y = 2)
 #'
-#' df <- tbl_abstract(df, src = simulate_ade())
+#' df <- tbl_abstract(df, src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
 tbl_abstract <- function(df, src = NULL) {
   make_tbl("abstract", ops = op_base_local(df), src = src)
@@ -90,7 +90,7 @@ simulate_kusto <- function()
             db = "local_df",
             cluster = "local_df"
         ),
-        class = "ade_database_endpoint"
+        class = "kusto_database_endpoint"
     )
 }
 
@@ -101,18 +101,18 @@ show_query.tbl_abstract <- function(tbl)
     kql_render(qry)
 }
 
-## TODO: Create an AzureDataExplorer table based on the below dbplyr code
+## TODO: Create a Kusto table based on the below dbplyr code
 ## #'
 ## #' @keywords internal
 ## #' @export
 ## #' @param subclass name of subclass
 ## #' @param ... needed for agreement with generic. Not otherwise used.
-## tbl_ade <- function(subclass, src, from, ...) {
+## tbl_kusto <- function(subclass, src, from, ...) {
 ##   # If not literal sql, must be a table identifier
 ##   #from <- as.sql(from)
 
 ##   vars <- vars %||% db_query_fields(src$con, from)
 ##   ops <- op_base_remote(from, vars)
 
-##   make_tbl(c(subclass, "ade", "abstract"), src = src, ops = ops)
+##   make_tbl(c(subclass, "kusto", "abstract"), src = src, ops = ops)
 ## }
