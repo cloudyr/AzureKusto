@@ -19,5 +19,5 @@ utils::globalVariables("self")
 
 config_dir <- function()
 {
-    rappdirs::user_config_dir(appname="AzureDataExplorer", appauthor="AzureR", roaming=FALSE)
+    rappdirs::user_config_dir(appname="AzureKusto", appauthor="AzureR", roaming=FALSE)
 }
