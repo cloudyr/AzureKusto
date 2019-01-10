@@ -63,20 +63,21 @@ group_by.tbl_abstract <- function(.data, ..., add = FALSE)
     }
 
     groups <- group_by_prepare(.data, .dots = dots, add = add)
+    names <- vapply(groups$groups, as_string, character(1))
     add_op_single("group_by",
                   groups$data,
-                  dots = set_names(groups4groups, names),
-                  args = list(add = false))
+                  dots = set_names(groups$groups, names),
+                  args = list(add = FALSE))
 }
 
 #' @export
-ungroup.tbl_lazy <- function(.data, ...)
+ungroup.tbl_abstract <- function(.data, ...)
 {
     add_op_single("ungroup", .data)
 }
 
 #' @export
-summarise.tbl_lazy <- function(.data, ...)
+summarise.tbl_abstract <- function(.data, ...)
 {
     dots <- quos(..., .named = TRUE)
     add_op_single("summarise", .data, dots = dots)

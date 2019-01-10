@@ -131,11 +131,12 @@ test_that("arrange() generates order by ",
 
 test_that("group_by() followed by summarize() generates summarize clause",
 {
+
     q <- tbl_iris %>%
         group_by(Species) %>%
         summarize(MaxSepalLength = max(SepalLength))
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by Species)")
+    expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by Species")
 })

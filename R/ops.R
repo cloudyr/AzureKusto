@@ -18,7 +18,6 @@ op_base_local <- function(df)
 }
 
 #' @export
-#' @rdname lazy_ops
 op_single <- function(name, x, dots = list(), args = list())
 {
     structure(
@@ -33,7 +32,6 @@ op_single <- function(name, x, dots = list(), args = list())
 }
 
 #' @export
-#' @rdname lazy_ops
 add_op_single <- function(name, .data, dots = list(), args = list())
 {
     .data$ops <- op_single(name, x = .data$ops, dots = dots, args = args)
@@ -41,32 +39,37 @@ add_op_single <- function(name, .data, dots = list(), args = list())
 }
 
 #' @export
-#' @rdname lazy_ops
 op_grps <- function(op) UseMethod("op_grps")
+
 #' @export
 op_grps.op_base <- function(op) character()
+
 #' @export
-op_grps.op_group_by <- function(op) {
+op_grps.op_group_by <- function(op)
+{
     if (isTRUE(op$args$add)) {
         union(op_grps(op$x), names(op$dots))
     } else {
         names(op$dots)
     }
 }
+
 #' @export
 op_grps.op_ungroup <- function(op)
 {
     character()
 }
+
 #' @export
 op_grps.op_summarise <- function(op)
 {
     grps <- op_grps(op$x)
-    if (length(grps) == 1) {
-        character()
-    } else {
-        grps[-length(grps)]
-    }
+    ## if (length(grps) == 1)
+    ## {
+    ##     character()
+    ## } else {
+    ##     grps[-length(grps)]
+    ## }
 }
 
 #' @export
@@ -92,9 +95,7 @@ op_grps.tbl_lazy <- function(op)
     op_grps(op$ops)
 }
 
-
 #' @export
-#' @rdname lazy_ops
 op_vars <- function(op) UseMethod("op_vars")
 
 #' @export
@@ -102,6 +103,7 @@ op_vars.op_base <- function(op)
 {
     op$vars
 }
+
 #' @export
 op_vars.op_select <- function(op)
 {
@@ -113,11 +115,13 @@ op_vars.op_rename <- function(op)
 {
     names(rename_vars(op_vars(op$x), !!! op$dots))
 }
+
 #' @export
 op_vars.op_summarise <- function(op)
 {
     c(op_grps(op$x), names(op$dots))
 }
+
 #' @export
 op_vars.op_distinct <- function(op)
 {
@@ -163,126 +167,4 @@ op_vars.op_set_op <- function(op)
 op_vars.tbl_lazy <- function(op)
 {
     op_vars(op$ops)
-}
-
-
-kql_env <- function(expr, vars)
-{
-    data_env <- as_environment(set_names(vars))
-
-    calls <- all_calls(expr)
-    call_list <- mapply(unknown_op, set_names(calls))
-    call_env <- as_environment(call_list, parent = data_env)
-
-    op_env <- env_clone(operator_env, call_env)
-    op_env
-}
-
-expr_type <- function(x)
-{
-    if (is_syntactic_literal(x))
-    {
-        if (is.character(x))
-        {
-            "string"
-        } else
-        {
-            "literal"
-        }
-    } else if (is.symbol(x))
-    {
-        "symbol"
-    } else if (is.call(x))
-    {
-        "call"
-    } else if (is.pairlist(x))
-    {
-        "pairlist"
-    } else
-    {
-        typeof(x)
-    }
-}
-
-switch_expr <- function(x, ...)
-{
-    switch(expr_type(x),
-           ...,
-           stop("Don't know how to handle type ", typeof(x), call. = FALSE)
-           )
-}
-
-all_calls_rec <- function(x)
-{
-    switch_expr(x,
-                constant = ,
-                literal = ,
-                string = ,
-                symbol = character(),
-                call = {
-                    fname <- as.character(x[[1]])
-                    children <- unlist(all_calls, mapply(as.list(x[-1])))
-                    c(fname, children)
-                }
-                )
-}
-
-all_calls <- function(x)
-{
-    unique(all_calls_rec(x))
-}
-
-quote_strings_rec <- function(x)
-{
-    if (expr_type(x) == "string")
-    {
-        kql_quote(x, "'")
-    } else if (expr_type(x) == "call")
-    {
-        as.call(lapply(x, quote_strings))
-    }
-    else
-    {
-        x
-    }
-}
-
-quote_strings <- function(x)
-{
-    quote_strings_rec(x)
-}
-
-unknown_op <- function(op)
-{
-    new_function(
-        exprs(... = ),
-        expr({
-            prefix(op)(...)
-        })
-    )
-}
-
-
-
-#' @export
-render <- function(query, con = NULL, ...)
-{
-    UseMethod("render")
-}
-
-#' @export
-render.op_filter <- function(op, vars)
-{
-    dots <- mapply(get_expr, op$dots)
-    translated_dots <- mapply(to_kql, dots, vars = vars)
-    paste0("where ", translated_dots)
-}
-
-render.op_mutate <- function(op, vars)
-{
-    assigned_exprs <- mapply(get_expr, op$dots)
-    vars <- append(vars, names(assigned_exprs))
-    stmts <- mapply(to_kql, assigned_exprs, vars = vars)
-    pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
-    paste0("extend ", pieces)
 }

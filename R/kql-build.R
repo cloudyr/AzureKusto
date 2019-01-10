@@ -1,14 +1,15 @@
+#' Build the tbl object into a data structure representing a Kusto query
 #' @export
 #' @keywords internal
 #' @param op A sequence of operations
 #' @param con (optional) A database connection.
-kql_build <- function(op, con = NULL)
+kql_build <- function(op)
 {
     UseMethod("kql_build")
 }
 
 #' @export
-kql_build.tbl_abstract <- function(op, con = NULL)
+kql_build.tbl_abstract <- function(op)
 {
     # only used for testing
     q <- flatten_query(op$ops)
@@ -18,19 +19,19 @@ kql_build.tbl_abstract <- function(op, con = NULL)
 
 
 #' @export
-kql_build.op_base_local <- function(op, con, ...)
+kql_build.op_base_local <- function(op, ...)
 {
     ident("df")
 }
 
 #' @export
-kql_build.op_select <- function(op, con, ...)
+kql_build.op_select <- function(op, ...)
 {
     kql_clause_select(translate_kql(!!! op$dots))
 }
 
 #' @export
-kql_build.op_filter <- function(op, con, ...)
+kql_build.op_filter <- function(op, ...)
 {
     dots <- mapply(get_expr, op$dots)
     dot_names <- mapply(all_names, dots)
@@ -43,7 +44,7 @@ kql_build.op_filter <- function(op, con, ...)
 }
 
 #' @export
-kql_build.op_distinct <- function(op, con, ...)
+kql_build.op_distinct <- function(op, ...)
 {
     if (length(op$dots) == 0){
         cols <- op$vars
@@ -56,7 +57,7 @@ kql_build.op_distinct <- function(op, con, ...)
 }
 
 #' @export
-kql_build.op_mutate <- function(op, con, ...)
+kql_build.op_mutate <- function(op, ...)
 {
     assigned_exprs <- mapply(rlang::get_expr, op$dots)
     stmts <- mapply(translate_kql, assigned_exprs)
@@ -65,11 +66,27 @@ kql_build.op_mutate <- function(op, con, ...)
 }
 
 #' @export
-kql_build.op_arrange <- function(op, con, ...)
+kql_build.op_arrange <- function(op, ...)
 {
     dots <- mapply(append_asc, op$dots)
     order_vars <- translate_kql(!!! dots)
-    build_kql("order by ", build_kql(escape(order_vars, collapse = ", ", con = con)))
+    build_kql("order by ", build_kql(escape(order_vars, collapse = ", ")))
+}
+
+#' @export
+kql_build.op_summarise <- function(op, ...)
+{
+    assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    stmts <- mapply(translate_kql, assigned_exprs)
+    pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+    groups <- build_kql(escape(ident(op$groups), collapse = ", "))
+    kql(paste0("summarize ", pieces, " by ", groups))
+}
+
+#' @export
+kql_build.op_group_by <- function(op, ...)
+{
+    NULL
 }
 
 append_asc <- function(dot)
@@ -93,13 +110,14 @@ append_asc <- function(dot)
 }
 
 #' Walks the tree of ops and builds a stack.
-#' 
+#'
 #' @export
 flatten_query <- function(op, ops=list())
 {
     flat_op <- op
     flat_op$x <- NULL
     flat_op$vars <- op_vars(op)
+    flat_op$groups <- op_grps(op)
 
     if (length(ops) == 0) {
         new_ops <- list(flat_op)
@@ -113,7 +131,7 @@ flatten_query <- function(op, ops=list())
     }
 }
 
-kql_clause_select <- function(select, con)
+kql_clause_select <- function(select)
 {
     stopifnot(is.character(select))
     if (is_empty(select)) {
@@ -122,26 +140,26 @@ kql_clause_select <- function(select, con)
 
     build_kql(
         "project ",
-        escape(select, collapse = ", ", con = con)
+        escape(select, collapse = ", ")
     )
 }
 
-kql_clause_distinct <- function(distinct, con)
+kql_clause_distinct <- function(distinct)
 {
     stopifnot(is.character(distinct))
 
     build_kql(
         "distinct ",
-        escape(distinct, collapse = ", ", con = con)
+        escape(distinct, collapse = ", ")
     )
 }
 
 kql_clause_filter <- function(where)
 {
     if (length(where) > 0L) {
-        where_paren <- escape(where, parens = FALSE, con = con)
+        where_paren <- escape(where, parens = FALSE)
         build_kql("where ", kql_vector(where_paren, collapse = " and "))
-  }
+    }
 }
 
 kql_query <- function(ops, src)

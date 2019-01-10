@@ -4,7 +4,7 @@
 \alias{build_kql}
 \title{Build a KQL string.}
 \usage{
-build_kql(..., .env = parent.frame(), con = NULL)
+build_kql(..., .env = parent.frame())
 }
 \arguments{
 \item{...}{input to convert to KQL. Use \code{\link[=kql]{kql()}} to preserve
@@ -13,8 +13,6 @@ input as kql identifiers (safe)}
 
 \item{.env}{the environment in which to evalute the arguments. Should not
 be needed in typical use.}
-
-\item{con}{database connection; used to select correct quoting characters.}
 }
 \description{
 Build a KQL string.

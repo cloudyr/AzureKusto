@@ -5,9 +5,9 @@
 \alias{kql_vector}
 \title{Escape/quote a string.}
 \usage{
-escape(x, parens = NA, collapse = " ", con = NULL)
+escape(x, parens = NA, collapse = " ")
 
-kql_vector(x, parens = NA, collapse = " ", con = NULL)
+kql_vector(x, parens = NA, collapse = " ")
 }
 \arguments{
 \item{x}{An object to escape. Existing kql vectors will be left as is,
@@ -22,8 +22,6 @@ parens if length > 1.
 Default behaviour: lists are always wrapped in parens and separated by
 commas, identifiers are separated by commas and never wrapped,
 atomic vectors are separated by spaces and wrapped in parens if needed.}
-
-\item{con}{(optional) Database connection.}
 }
 \description{
 Escape/quote a string.

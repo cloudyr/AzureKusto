@@ -1,13 +1,10 @@
-#' @param ...,dots Expressions to translate. `translate_kql()`
-#'   automatically quotes them for you.  `translate_kql_()` expects
-#'   a list of already quoted objects.
-#' @param con An optional database connection to control the details of
-#'   the translation.
+#' Translate R expressions into Kusto Query Language equivalents.
+#' @param ...,dots Expressions to translate.
 #' @export
-translate_kql <- function(..., con = NULL)
+translate_kql <- function(...)
 {
     dots <- quos(...)
-    
+
     if (length(dots) == 0)
     {
         return(kql())
@@ -23,18 +20,18 @@ translate_kql <- function(..., con = NULL)
     pieces <- lapply(dots, function(x)
     {
         if (is_atomic(get_expr(x))) {
-            escape(get_expr(x), con = con)
+            escape(get_expr(x))
         } else {
-            mask <- kql_mask(x, variant, con)
+            mask <- kql_mask(x, variant)
             escape(eval_tidy(x, mask))
         }
     })
 
     kql(unlist(pieces))
-    
+
 }
 
-kql_mask <- function(expr, variant, con)
+kql_mask <- function(expr, variant)
 {
     # Default for unknown functions
     unknown <- setdiff(all_calls(expr), names(variant))
@@ -47,7 +44,7 @@ kql_mask <- function(expr, variant, con)
     # Existing symbols in expression
     names <- all_names(expr)
     name_env <- ceply(
-        names, function(x) escape(ident(x), con = con),
+        names, function(x) escape(ident(x)),
         parent = special_calls2
     )
 
@@ -87,7 +84,6 @@ kql_variant <- function(scalar = kql_translator(), aggregate = kql_translator())
 }
 
 #' @export
-#' @rdname kql_variant
 kql_translator <- function(..., .funs = list(),
                            .parent = new.env(parent = emptyenv()))
 {
@@ -102,7 +98,6 @@ copy_env <- function(from, to = NULL, parent = parent.env(from))
     list2env(as.list(from), envir = to, parent = parent)
 }
 
-#' @rdname kql_variant
 #' @export
 kql_infix <- function(f)
 {
@@ -362,7 +357,6 @@ base_symbols <- kql_translator(
 )
 
 #' @export
-#' @rdname kql_variant
 #' @format NULL
 base_agg <- kql_translator(
     n          = function() kql("count"),

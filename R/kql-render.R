@@ -1,5 +1,5 @@
 #' @export
-kql_render <- function(query, con = NULL, ...)
+kql_render <- function(query, ...)
 {
     UseMethod("kql_render")
 }
@@ -17,27 +17,27 @@ kql_render.kql_query <- function(q)
 }
 
 #' @export
-kql_render.tbl_abstract <- function(query, con = query$con, ...)
+kql_render.tbl_abstract <- function(query, ...)
 {
     # only used for testing
-    qry <- kql_build(query$ops, con = con, ...)
-    kql_render(qry, con = con, ...)
+    qry <- kql_build(query$ops, ...)
+    kql_render(qry, ...)
 }
 
 #' @export
-kql_render.op <- function(query, con = NULL, ...)
+kql_render.op <- function(query, ...)
 {
-    kql_render(kql_build(query, con = con, ...), con = con, ...)
+    kql_render(kql_build(query, ...), ...)
 }
 
 #' @export
-kql_render.ident <- function(query, con = NULL, ..., root = TRUE)
+kql_render.ident <- function(query, ..., root = TRUE)
 {
     query
 }
 
 #' @export
-kql_render.kql <- function(query, con = NULL, ...)
+kql_render.kql <- function(query, ...)
 {
     query
 }

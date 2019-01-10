@@ -11,8 +11,6 @@
 #'   Default behaviour: lists are always wrapped in parens and separated by
 #'   commas, identifiers are separated by commas and never wrapped,
 #'   atomic vectors are separated by spaces and wrapped in parens if needed.
-#' @param con (optional) Database connection. 
-#' @rdname escape
 #' @export
 #' @examples
 #' # Doubles vs. integers
@@ -28,62 +26,60 @@
 #' escape("X")
 #' escape(escape("X"))
 #' escape(escape(escape("X")))
-escape <- function(x, parens = NA, collapse = " ", con = NULL)
+escape <- function(x, parens = NA, collapse = " ")
 {
     UseMethod("escape")
 }
 
 #' @export
-escape.ident <- function(x, parens = FALSE, collapse = ", ", con = NULL)
+escape.ident <- function(x, parens = FALSE, collapse = ", ")
 {
     y <- kql_escape_ident(x)
     kql_vector(y, parens, collapse)
 }
 
 #' @export
-escape.ident_q <- function(x, parens = FALSE, collapse = ", ", con = NULL)
+escape.ident_q <- function(x, parens = FALSE, collapse = ", ")
 {
     kql_vector(x, parense, collapse)
 }
 
 #' @export
-escape.logical <- function(x, parens = NA, collapse = ", ", con = NULL) {
-  kql_vector(kql_escape_logical(x), parens, collapse, con = con)
+escape.logical <- function(x, parens = NA, collapse = ", ") {
+  kql_vector(kql_escape_logical(x), parens, collapse)
 }
 
 #' @export
-escape.factor <- function(x, parens = NA, collapse = ", ", con = NULL) {
+escape.factor <- function(x, parens = NA, collapse = ", ") {
   x <- as.character(x)
-  escape.character(x, parens = parens, collapse = collapse, con = con)
+  escape.character(x, parens = parens, collapse = collapse)
 }
 
 #' @export
-escape.Date <- function(x, parens = NA, collapse = ", ", con = NULL) {
+escape.Date <- function(x, parens = NA, collapse = ", ") {
   x <- as.character(x)
-  escape.character(x, parens = parens, collapse = collapse, con = con)
+  escape.character(x, parens = parens, collapse = collapse)
 }
 
 #' @export
-escape.POSIXt <- function(x, parens = NA, collapse = ", ", con = NULL) {
+escape.POSIXt <- function(x, parens = NA, collapse = ", ") {
   x <- strftime(x, "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
-  escape.character(x, parens = parens, collapse = collapse, con = con)
+  escape.character(x, parens = parens, collapse = collapse)
 }
 
 #' @export
-escape.character <- function(x, parens = NA, collapse = ", ", con = NULL) {
+escape.character <- function(x, parens = NA, collapse = ", ") {
     # Kusto doesn't support null strings, instead use empty string
     out <- x
     out[is.na(x)] <- ""
     out[is.null(x)] <- ""
-    kql_vector(kql_escape_string(out), parens, collapse, con = con)
+    kql_vector(kql_escape_string(out), parens, collapse)
 }
 
 #' @export
-escape.double <- function(x, parens = NA, collapse = ", ", con = NULL)
+escape.double <- function(x, parens = NA, collapse = ", ")
 {
-  #  out <- ifelse(is.wholenumber(x), sprintf("%.1f", x), as.character(x))
     out <- as.character(x)
-  # Special values
     out[is.na(x)] <- "real(null)"
     inf <- is.infinite(x)
     out[inf & x > 0] <- "'real(+inf)'"
@@ -93,37 +89,37 @@ escape.double <- function(x, parens = NA, collapse = ", ", con = NULL)
 }
 
 #' @export
-escape.integer <- function(x, parens = NA, collapse = ", ", con = NULL) {
+escape.integer <- function(x, parens = NA, collapse = ", ") {
   x[is.na(x)] <- "int(null)"
   kql_vector(x, parens, collapse)
 }
 
 #' @export
-escape.integer64 <- function(x, parens = NA, collapse = ", ", con = NULL) {
+escape.integer64 <- function(x, parens = NA, collapse = ", ") {
   x <- as.character(x)
   x[is.na(x)] <- "long(null)"
   kql_vector(x, parens, collapse)
 }
 
 #' @export
-escape.NULL <- function(x, parens = NA, collapse = " ", con = NULL) {
+escape.NULL <- function(x, parens = NA, collapse = " ") {
   kql("null")
 }
 
 #' @export
-escape.kql <- function(x, parens = NULL, collapse = NULL, con = NULL) {
-  kql_vector(x, isTRUE(parens), collapse, con = con)
+escape.kql <- function(x, parens = NULL, collapse = NULL) {
+  kql_vector(x, isTRUE(parens), collapse)
 }
 
 #' @export
-escape.list <- function(x, parens = TRUE, collapse = ", ", con = NULL) {
-  pieces <- vapply(x, escape, character(1), con = con)
+escape.list <- function(x, parens = TRUE, collapse = ", ") {
+  pieces <- vapply(x, escape, character(1))
   kql_vector(pieces, parens, collapse)
 }
 
 #' @export
 #' @rdname escape
-kql_vector <- function(x, parens = NA, collapse = " ", con = NULL)
+kql_vector <- function(x, parens = NA, collapse = " ")
 {
     if (length(x) == 0) {
         if (!is.null(collapse)) {
@@ -149,9 +145,8 @@ kql_vector <- function(x, parens = NA, collapse = " ", con = NULL)
 #'   input as kql identifiers (safe)
 #' @param .env the environment in which to evalute the arguments. Should not
 #'   be needed in typical use.
-#' @param con database connection; used to select correct quoting characters.
 #' @export
-build_kql <- function(..., .env = parent.frame(), con = NULL) {
+build_kql <- function(..., .env = parent.frame()) {
   escape_expr <- function(x) {
     # If it's a string, leave it as is
     if (is.character(x)) return(x)
@@ -160,7 +155,7 @@ build_kql <- function(..., .env = parent.frame(), con = NULL) {
     # Skip nulls, so you can use if statements like in paste
     if (is.null(val)) return("")
 
-    escape(val, con = con)
+    escape(val)
   }
 
   pieces <- vapply(dots(...), escape_expr, character(1))
