@@ -48,7 +48,8 @@ kql_build.op_distinct <- function(op, ...)
 {
     if (length(op$dots) == 0){
         cols <- op$vars
-    } else
+    }
+    else
     {
         cols <- tidyselect::vars_select(op$vars, !!! op$dots)
     }
@@ -56,13 +57,50 @@ kql_build.op_distinct <- function(op, ...)
     kql_clause_distinct(ident(cols))
 }
 
+#' dplyr's mutate verb can include aggregations, but Kusto's extend verb cannot.
+#' If the mutate contains no aggregations, then it can emit an extend clause.
+#' If the mutate contains an aggregation and the tbl is ungrouped,
+#' then it must emit a summarize clause grouped by all variables.
+#' If the mutate contains an aggregation and the tbl is grouped,
+#' then it must join to a subquery containing the summarize clause.
 #' @export
 kql_build.op_mutate <- function(op, ...)
 {
     assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    calls <- unlist(mapply(all_calls, assigned_exprs))
+    calls_agg <- mapply(is_agg, calls)
+    groups <- build_kql(escape(ident(op$groups), collapse = ", "))
+    all_vars <- build_kql(escape(ident(op$vars), collapse = ", "))
+    existing_vars <- build_kql(escape(ident(setdiff(op$vars, names(assigned_exprs))), collapse = ", "))
+    
+    if (any(calls_agg))
+    {
+        has_agg <- TRUE
+        if (nchar(groups) == 0) {
+            has_grouping <- FALSE
+            verb <- "summarize "
+            by <- build_kql(" by ", existing_vars)
+        } else
+        {
+            has_grouping <- TRUE
+            verb <- "as tmp | join kind=leftouter (tmp | summarize "
+            by <- build_kql(" by ", groups)
+            on <- build_kql(") on ", groups)
+            project <- build_kql("\n| project ", all_vars)
+            by <- paste0(by, on, project)
+        }
+    }
+    else
+    {
+        has_agg <- FALSE
+        verb <- "extend "
+        by <- ""
+    }
+
     stmts <- mapply(translate_kql, assigned_exprs)
-    pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
-    kql(paste0("extend ", pieces))
+    pieces <- lapply(seq_along(assigned_exprs),
+                     function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+    kql(paste0(verb, pieces, by))
 }
 
 #' @export
@@ -78,13 +116,21 @@ kql_build.op_summarise <- function(op, ...)
 {
     assigned_exprs <- mapply(rlang::get_expr, op$dots)
     stmts <- mapply(translate_kql, assigned_exprs)
-    pieces <- lapply(seq_along(assigned_exprs), function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+    pieces <- lapply(seq_along(assigned_exprs),
+                     function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
     groups <- build_kql(escape(ident(op$groups), collapse = ", "))
-    kql(paste0("summarize ", pieces, " by ", groups))
+    by <- ifelse(nchar(groups) > 0, paste0(" by ", groups), "")
+    kql(paste0("summarize ", pieces, by))
 }
 
 #' @export
 kql_build.op_group_by <- function(op, ...)
+{
+    NULL
+}
+
+#' @export
+kql_build.op_ungroup <- function(op, ...)
 {
     NULL
 }

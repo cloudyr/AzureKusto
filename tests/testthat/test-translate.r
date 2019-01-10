@@ -140,3 +140,51 @@ test_that("group_by() followed by summarize() generates summarize clause",
 
     expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by Species")
 })
+
+test_that("group_by() followed by ungroup() followed by summarize() generates summarize clause",
+{
+
+    q <- tbl_iris %>%
+        group_by(Species) %>%
+        summarize(MaxSepalLength = max(SepalLength)) %>%
+        ungroup() %>%
+        summarize(MeanOfMaxSepalLength = mean(MaxSepalLength))
+
+    q_str <- q %>% show_query()
+
+    expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by Species\n| summarize MeanOfMaxSepalLength = avg(MaxSepalLength)")
+})
+
+test_that("group_by() followed by mutate() partitions the mutation by the grouping variables",
+{
+
+    q <- tbl_iris %>%
+        group_by(Species) %>%
+        mutate(SpeciesMaxSepalLength = max(SepalLength))
+
+    q_str <- q %>% show_query()
+
+    expect_equal(q_str, "database(local_df).df\n| as tmp | join kind=leftouter (tmp | summarize SpeciesMaxSepalLength = max(SepalLength) by Species) on Species\n| project SepalLength, SepalWidth, PetalLength, PetalWidth, Species, SpeciesMaxSepalLength")
+})
+
+test_that("mutate() with an agg function and no group_by() groups by all other columns",
+{
+
+    q <- tbl_iris %>%
+        mutate(MaxSepalLength = max(SepalLength))
+
+    q_str <- q %>% show_query()
+
+    expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by SepalLength, SepalWidth, PetalLength, PetalWidth, Species")
+})
+
+test_that("is_agg works with symbols and strings", {
+
+    expect_true(is_agg(n))
+    expect_true(is_agg("n"))
+    expect_false(is_agg(o))
+    expect_false(is_agg("o"))
+    expect_false(is_agg(`+`))
+    expect_false(is_agg(abs))
+    expect_false(is_agg(TRUE))
+})

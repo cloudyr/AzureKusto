@@ -141,6 +141,17 @@ kql_aggregate <- function(f)
     }
 }
 
+#' @export
+kql_window <- function(f)
+{
+    stopifnot(is.character(f))
+
+    function(x, na.rm = FALSE) {
+        check_na_rm(f, na.rm)
+        build_kql(kql(f), list(x))
+    }
+}
+
 check_na_rm <- function(f, na.rm)
 {
     if (identical(na.rm, TRUE)) {
@@ -357,7 +368,6 @@ base_symbols <- kql_translator(
 )
 
 #' @export
-#' @format NULL
 base_agg <- kql_translator(
     n          = function() kql("count"),
     mean       = kql_aggregate("avg"),
@@ -368,7 +378,29 @@ base_agg <- kql_translator(
     n_distinct = kql_aggregate("dcount")
 )
 
+#' @export
+base_window <- kql_translator(
+    row_number = kql_window("row_number")
+)
+
 dots <- function(...)
 {
     eval_bare(substitute(alist(...)))
+}
+
+is_agg <- function(f)
+{
+    ef <- enexpr(f)
+
+    if (is.symbol(ef))
+    {
+        sf <- as_string(ef)
+    } else if (typeof(ef) == "character")
+    {
+        sf <- ef
+    } else {
+        return(FALSE)
+    }
+
+    sf %in% ls(base_agg)
 }
