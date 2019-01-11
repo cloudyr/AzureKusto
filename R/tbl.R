@@ -31,6 +31,13 @@ distinct.tbl_abstract <- function(.data, ...)
 }
 
 #' @export
+rename.tbl_abstract <- function(.data, ...)
+{
+    dots <- quos(...)
+    add_op_single("rename", .data, dots = dots)
+}
+
+#' @export
 filter.tbl_abstract <- function(.data, ...)
 {
     dots <- quos(...)

@@ -57,6 +57,16 @@ kql_build.op_distinct <- function(op, ...)
     kql_clause_distinct(ident(cols))
 }
 
+#' @export
+kql_build.op_rename <- function(op, ...)
+{
+    assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    stmts <- lapply(assigned_exprs, translate_kql)
+    pieces <- lapply(seq_along(assigned_exprs),
+                     function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+    kql(paste0("project-rename ", paste0(pieces, collapse=", ")))
+}
+
 #' dplyr's mutate verb can include aggregations, but Kusto's extend verb cannot.
 #' If the mutate contains no aggregations, then it can emit an extend clause.
 #' If the mutate contains an aggregation and the tbl is ungrouped,

@@ -188,3 +188,12 @@ test_that("is_agg works with symbols and strings", {
     expect_false(is_agg(abs))
     expect_false(is_agg(TRUE))
 })
+
+test_that("rename() renames variables", {
+    q <- tbl_iris %>%
+        rename(Species2 = Species, SepalLength2 = SepalLength)
+
+    q_str <- q %>% show_query()
+
+    expect_equal(q_str, "database(local_df).df\n| project-rename Species2 = Species, SepalLength2 = SepalLength")
+})
