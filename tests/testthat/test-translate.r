@@ -169,7 +169,6 @@ test_that("group_by() followed by mutate() partitions the mutation by the groupi
 
 test_that("mutate() with an agg function and no group_by() groups by all other columns",
 {
-
     q <- tbl_iris %>%
         mutate(MaxSepalLength = max(SepalLength))
 
@@ -180,7 +179,6 @@ test_that("mutate() with an agg function and no group_by() groups by all other c
 
 test_that("is_agg works with symbols and strings",
 {
-
     expect_true(is_agg(n))
     expect_true(is_agg("n"))
     expect_false(is_agg(o))
@@ -192,13 +190,20 @@ test_that("is_agg works with symbols and strings",
 
 test_that("rename() renames variables",
 {
-    
     q <- tbl_iris %>%
         rename(Species2 = Species, SepalLength2 = SepalLength)
 
     q_str <- q %>% show_query()
 
     expect_equal(q_str, "database(local_df).df\n| project-rename Species2 = Species, SepalLength2 = SepalLength")
+})
+
+test_that("rename() errors when given a nonexistent column",
+{
+    q <- tbl_iris %>%
+        rename(Species2 = Species1)
+
+    expect_error(show_query(q), "object 'Species1' not found")
 })
 
 test_that("head(10) translates to take 10",
@@ -217,6 +222,24 @@ test_that("head() translates to take 6 (the default)",
         head()
 
     q_str <- q %>% show_query
-    
+
     expect_equal(q_str, "database(local_df).df\n| take 6")
+})
+
+left <- tbl_iris
+
+right <- iris %>%
+    group_by(Species) %>%
+    summarize(MaxSepalLength = max(Sepal.Length))
+
+right <- tbl_abstract(right, src = simulate_kusto())
+
+test_that("inner_join() translates correctly",
+{
+    q <- left %>%
+        inner_join(right, by = c("Species"))
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, "database(local_df).df\n| join kind=inner (database(local_df).df) on Species")
 })

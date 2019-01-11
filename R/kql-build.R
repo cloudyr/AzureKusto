@@ -82,7 +82,7 @@ kql_build.op_mutate <- function(op, ...)
     groups <- build_kql(escape(ident(op$groups), collapse = ", "))
     all_vars <- build_kql(escape(ident(op$vars), collapse = ", "))
     existing_vars <- build_kql(escape(ident(setdiff(op$vars, names(assigned_exprs))), collapse = ", "))
-    
+
     if (any(calls_agg))
     {
         has_agg <- TRUE

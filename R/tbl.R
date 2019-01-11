@@ -97,6 +97,17 @@ head.tbl_abstract <- function(.data, n = 6L, ...)
 }
 
 #' @export
+inner_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+{
+    add_op_join("inner_join", x, y, by = by, suffix = suffix, ...)
+}
+
+tbl_vars.tbl_abstract <- function(x)
+{
+    op_vars(x$ops)
+}
+
+#' @export
 simulate_kusto <- function()
 {
     structure(

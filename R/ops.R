@@ -39,6 +39,85 @@ add_op_single <- function(name, .data, dots = list(), args = list())
 }
 
 #' @export
+op_double <- function(name, x, y, args = list())
+{
+    structure(
+        list(
+            name = name,
+            x = x,
+            y = y,
+            args = args
+        ),
+        class = c(paste0("op_", name), "op_double", "op")
+    )
+}
+
+#' @export
+add_op_join <- function(type, x, y, by = NULL, suffix = NULL, ...)
+{
+    by <- common_by(by, x, y)
+    vars <- join_vars(op_vars(x), op_vars(y), type = type, by = by, suffix = suffix)
+    x$ops <- op_double("join", x, y,
+                       args = list(
+                           vars = vars,
+                           type = type,
+                           by = by,
+                           suffix = suffix
+                       ))
+    x
+}
+
+join_vars <- function(x_names, y_names, type, by, suffix = c(".x", ".y"))
+{
+    # Remove join keys from y's names
+    y_names <- setdiff(y_names, by$y)
+
+    if(!is.character(suffix) || length(suffix) != 2)
+    {
+        stop("`suffix` must be a character vector of length 2.", call. = FALSE)
+    }
+
+    suffix <- list(x = suffix[1], y = suffix[2])
+    x_new <- add_suffixes(x_names, y_names, suffix$x)
+    y_new <- add_suffixes(y_names, x_names, suffix$y)
+
+    # In left and inner joins, return key values only from x
+    # In right joins, return key values only from y
+     # In full joins, return key values by coalescing values from x and y
+    x_x <- x_names
+    x_y <- by$y[match(x_names, by$x)]
+    x_y[type == "left_join" | type == "inner_join"] <- NA
+    x_x[type == "right_join" & !is.na(x_y)] <- NA
+    y_x <- rep_len(NA, length(y_names))
+    y_y <- y_names
+
+    # Return a list with 3 parallel vectors
+    # At each position, values in the 3 vectors represent
+    #  alias - name of column in join result
+    #  x - name of column from left table or NA if only from right table
+    #  y - name of column from right table or NA if only from left table
+    list(alias = c(x_new, y_new), x = c(x_x, y_x), y = c(x_y, y_y))
+}
+
+add_suffixes <- function(x, y, suffix)
+{
+    if (identical(suffix, "")) {
+        return(x)
+    }
+
+    out <- chr_along(x)
+    for (i in seq_along(x)) {
+        nm <- x[[i]]
+        while (nm %in% y || nm %in% out) {
+            nm <- paste0(nm, suffix)
+        }
+
+        out[[i]] <- nm
+    }
+    out
+}
+
+#' @export
 op_grps <- function(op) UseMethod("op_grps")
 
 #' @export
@@ -90,7 +169,7 @@ op_grps.op_double <- function(op)
 }
 
 #' @export
-op_grps.tbl_lazy <- function(op)
+op_grps.tbl_abstract <- function(op)
 {
     op_grps(op$ops)
 }
@@ -152,6 +231,12 @@ op_vars.op_join <- function(op)
 }
 
 #' @export
+op_vars.op_join <- function(op)
+{
+    op$args$vars$alias
+}
+
+#' @export
 op_vars.op_semi_join <- function(op)
 {
     op_vars(op$x)
@@ -164,7 +249,7 @@ op_vars.op_set_op <- function(op)
 }
 
 #' @export
-op_vars.tbl_lazy <- function(op)
+op_vars.tbl_abstract <- function(op)
 {
     op_vars(op$ops)
 }
