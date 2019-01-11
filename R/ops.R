@@ -17,6 +17,11 @@ op_base_local <- function(df)
     op_base(df, names(df), class = "local")
 }
 
+op_base_remote <- function(x, vars)
+{
+    op_base(x, vars, class = "remote")
+}
+
 #' @export
 op_single <- function(name, x, dots = list(), args = list())
 {

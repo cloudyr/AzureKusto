@@ -126,18 +126,19 @@ show_query.tbl_abstract <- function(tbl)
     kql_render(qry)
 }
 
-## TODO: Create a Kusto table based on the below dbplyr code
-## #'
-## #' @keywords internal
+
+## #' A tbl object representing a table in a Kusto database.
 ## #' @export
 ## #' @param subclass name of subclass
 ## #' @param ... needed for agreement with generic. Not otherwise used.
-## tbl_kusto <- function(subclass, src, from, ...) {
-##   # If not literal sql, must be a table identifier
-##   #from <- as.sql(from)
+tbl_kusto <- function(kusto_database, table_name, ...)
+{
+    stopifnot(inherits(kusto_database, "kusto_database_endpoint"))
+    
+    vars <- names(run_query(kusto_database, sprintf("%s | take 6", escape(ident(table_name)))))
+    
+    ops <- op_base_remote(table_name, vars)
 
-##   vars <- vars %||% db_query_fields(src$con, from)
-##   ops <- op_base_remote(from, vars)
+    make_tbl(c("kusto", "abstract"), src = kusto_database, ops = ops)
+}
 
-##   make_tbl(c(subclass, "kusto", "abstract"), src = src, ops = ops)
-## }
