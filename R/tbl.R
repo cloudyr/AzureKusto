@@ -136,7 +136,7 @@ tbl_kusto <- function(kusto_database, table_name, ...)
 {
     stopifnot(inherits(kusto_database, "kusto_database_endpoint"))
     kusto_database$table <- table_name
-    vars <- names(run_query(kusto_database, sprintf("%s | take 6", escape(ident(table_name)))))   
+    vars <- names(run_query(kusto_database, sprintf("%s | take 1", escape(ident(table_name)))))   
     ops <- op_base_remote(table_name, vars)
     make_tbl(c("kusto", "abstract"), src = kusto_database, ops = ops)
 }
@@ -148,5 +148,5 @@ collect.tbl_kusto <- function(tbl, ...)
 {
     q <- kql_build(tbl)
     q_str <- kql_render(q)
-    run_query(tbl$src, q_str)
+    as.tibble(run_query(tbl$src, q_str))
 }
