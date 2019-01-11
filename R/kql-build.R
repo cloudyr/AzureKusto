@@ -25,6 +25,12 @@ kql_build.op_base_local <- function(op, ...)
 }
 
 #' @export
+kql_build.op_base_remote <- function(op, ...)
+{
+    ident(op$src$x)
+}
+
+#' @export
 kql_build.op_select <- function(op, ...)
 {
     kql_clause_select(translate_kql(!!! op$dots))

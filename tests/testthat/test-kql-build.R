@@ -6,7 +6,7 @@ context("KQL Build")
 
 test_that("filter generates simple expressions",
 {
-    out <- tbl_abstract(data.frame(x = 1)) %>%
+    out <- tbl_abstract(data.frame(x = 1), "foo") %>%
         filter(x > 1L) %>%
         kql_build()
 
@@ -17,7 +17,7 @@ test_that("filter generates simple expressions",
 
 test_that("mutate generates simple expressions",
 {
-    out <- tbl_abstract(data.frame(x = 1)) %>%
+    out <- tbl_abstract(data.frame(x = 1), "foo") %>%
         mutate(y = x + 1L) %>%
         kql_build()
 

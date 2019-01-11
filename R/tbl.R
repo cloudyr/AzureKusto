@@ -10,7 +10,8 @@
 #'
 #' df <- tbl_abstract(df, src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
-tbl_abstract <- function(df, src = NULL) {
+tbl_abstract <- function(df, table_name, src = NULL) {
+  src$table <- table_name
   make_tbl("abstract", ops = op_base_local(df), src = src)
 }
 
@@ -112,7 +113,7 @@ simulate_kusto <- function()
 {
     structure(
         list(
-            db = "local_df",
+            database = "local_df",
             cluster = "local_df"
         ),
         class = "kusto_database_endpoint"
@@ -134,11 +135,18 @@ show_query.tbl_abstract <- function(tbl)
 tbl_kusto <- function(kusto_database, table_name, ...)
 {
     stopifnot(inherits(kusto_database, "kusto_database_endpoint"))
-    
-    vars <- names(run_query(kusto_database, sprintf("%s | take 6", escape(ident(table_name)))))
-    
+    kusto_database$table <- table_name
+    vars <- names(run_query(kusto_database, sprintf("%s | take 6", escape(ident(table_name)))))   
     ops <- op_base_remote(table_name, vars)
-
     make_tbl(c("kusto", "abstract"), src = kusto_database, ops = ops)
 }
 
+#' Compile the preceding dplyr oprations into a kusto query, execute it on the remote server,
+#' and return the result as a tibble.
+#' @export
+collect.tbl_kusto <- function(tbl, ...)
+{
+    q <- kql_build(tbl)
+    q_str <- kql_render(q)
+    run_query(tbl$src, q_str)
+}
