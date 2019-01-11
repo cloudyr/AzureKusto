@@ -145,6 +145,13 @@ kql_build.op_ungroup <- function(op, ...)
     NULL
 }
 
+#' @export
+kql_build.op_head <- function(op, ...)
+{
+    n <- lapply(op$args$n, translate_kql)
+    build_kql("take ", kql(escape(n, parens = FALSE)))
+}
+
 append_asc <- function(dot)
 {
     if (class(dot[[2]]) == "name")

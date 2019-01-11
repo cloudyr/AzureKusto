@@ -178,7 +178,8 @@ test_that("mutate() with an agg function and no group_by() groups by all other c
     expect_equal(q_str, "database(local_df).df\n| summarize MaxSepalLength = max(SepalLength) by SepalLength, SepalWidth, PetalLength, PetalWidth, Species")
 })
 
-test_that("is_agg works with symbols and strings", {
+test_that("is_agg works with symbols and strings",
+{
 
     expect_true(is_agg(n))
     expect_true(is_agg("n"))
@@ -189,11 +190,33 @@ test_that("is_agg works with symbols and strings", {
     expect_false(is_agg(TRUE))
 })
 
-test_that("rename() renames variables", {
+test_that("rename() renames variables",
+{
+    
     q <- tbl_iris %>%
         rename(Species2 = Species, SepalLength2 = SepalLength)
 
     q_str <- q %>% show_query()
 
     expect_equal(q_str, "database(local_df).df\n| project-rename Species2 = Species, SepalLength2 = SepalLength")
+})
+
+test_that("head(10) translates to take 10",
+{
+    q <- tbl_iris %>%
+        head(10)
+
+    q_str <- q %>% show_query()
+
+    expect_equal(q_str, "database(local_df).df\n| take 10")
+})
+
+test_that("head() translates to take 6 (the default)",
+{
+    q <- tbl_iris %>%
+        head()
+
+    q_str <- q %>% show_query
+    
+    expect_equal(q_str, "database(local_df).df\n| take 6")
 })

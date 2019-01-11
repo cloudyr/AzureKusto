@@ -91,6 +91,12 @@ summarise.tbl_abstract <- function(.data, ...)
 }
 
 #' @export
+head.tbl_abstract <- function(.data, n = 6L, ...)
+{
+    add_op_single("head", .data, args = list(n = n))
+}
+
+#' @export
 simulate_kusto <- function()
 {
     structure(
