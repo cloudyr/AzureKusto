@@ -103,6 +103,36 @@ inner_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...
     add_op_join("inner_join", x, y, by = by, suffix = suffix, ...)
 }
 
+#' @export
+left_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+{
+    add_op_join("left_join", x, y, by = by, suffix = suffix, ...)
+}
+
+#' @export
+right_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+{
+    add_op_join("right_join", x, y, by = by, suffix = suffix, ...)
+}
+
+#' @export
+full_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+{
+    add_op_join("full_join", x, y, by = by, suffix = suffix, ...)
+}
+
+#' @export
+semi_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+{
+    add_op_join("semi_join", x, y, by = by, suffix = suffix, ...)
+}
+
+#' @export
+anti_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+{
+    add_op_join("anti_join", x, y, by = by, suffix = suffix, ...)
+}
+
 tbl_vars.tbl_abstract <- function(x)
 {
     op_vars(x$ops)
