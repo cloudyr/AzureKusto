@@ -19,24 +19,15 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
 
     if(!is.null(.azure_token))
     {
-        if(!(inherits(.azure_token, "AzureToken") && inherits(.azure_token, "R6")))
-            stop(".azure_token should be an object of class AzureRMR::AzureToken")
-
+        validate_kusto_token(.azure_token)
         props$token <- .azure_token
     }
-    else
-    {
-        props$fed <- as.logical(props$fed)
-        if(!isTRUE(props$fed))
-        {
-            warning("Only AAD federated authentication supported at this time", call.=FALSE)
-            props$fed <- TRUE
-        }
 
-        url <- httr::parse_url(props$server)
-        subnames <- strsplit(url$host, ".", fixed=TRUE)[[1]]
-        props$token <- get_kusto_token(cluster=subnames[1], location=subnames[2], tenant=props$tenantid)
-    }
+    # if .azure_token arg not supplied, get it from other properties
+    if(is.null(props$token))
+        props$token <- find_kusto_token(props)
+    if(is.null(props$token))
+        stop("Unable to obtain Azure Active Directory token", call.=FALSE)
 
     class(props) <- "kusto_database_endpoint"
     props
@@ -86,3 +77,46 @@ normalize_properties <- function(properties)
     names(properties) <- sapply(names(properties), normalize_name)
     lapply(properties, strip_quotes)
 }
+
+
+# token should be a string or an object of class AzureRMR::AzureToken
+validate_kusto_token <- function(token)
+{
+    if(!(is.character(token) && length(token) == 1) || is_azure_token(token))
+        stop("Token should be a string or an object of class AzureRMR::AzureToken", call.=FALSE)
+}
+
+
+find_kusto_token <- function(properties)
+{
+    # properties to check for token: usertoken, apptoken, appclientid, appkey
+    if(!is_empty(properties$usertoken))
+    {
+        validate_kusto_token(properties$usertoken)
+        return(properties$usertoken)
+    }
+    if(!is_empty(properties$apptoken))
+    {
+        validate_kusto_token(properties$apptoken)
+        return(properties$apptoken)
+    }
+    if(!is_empty(properties$appclientid))
+    {
+        # possibilities for authenticating with AAD:
+        # - appid + appkey
+        # - appid + username + userpwd
+        # - appid only
+        token <- if(!is_empty(properties$appkey))
+            AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
+                app=properties$appclientid, password=properties$appkey)
+        else if(!is_empty(properties$user) && !is_empty(properties$pwd)) 
+            AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
+                app=properties$appclientid, password=properties$pwd, username=properties$user)
+        else AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
+                app=properties$appclientid)
+        return(token)
+    }
+    # if no token was found
+    NULL
+}
+
