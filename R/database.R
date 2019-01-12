@@ -106,15 +106,18 @@ find_kusto_token <- function(properties)
         # - appid + appkey
         # - appid + username + userpwd
         # - appid only
-        token <- if(!is_empty(properties$appkey))
-            AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
-                app=properties$appclientid, password=properties$appkey)
-        else if(!is_empty(properties$user) && !is_empty(properties$pwd)) 
-            AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
-                app=properties$appclientid, password=properties$pwd, username=properties$user)
-        else AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
-                app=properties$appclientid)
-        return(token)
+        token_pwd <- token_user <- NULL
+
+        if(!is_empty(properties$user) && !is_empty(properties$pwd))
+        {
+            token_pwd <- properties$pwd
+            token_user <- properties$user
+        }
+        else if(!is_empty(properties$appkey))
+            token_pwd <- properties$appkey
+
+        return(AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
+            app=properties$appclientid, password=token_pwd, username=token_user))
     }
     # if no token was found
     NULL
