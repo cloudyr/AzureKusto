@@ -162,6 +162,20 @@ kql_build.op_join <- function(op, ...)
 {
     join_type <- op$args$type
 
+    by <- op$args$by
+
+    by_x <- escape(ident(by$x))
+    
+    if (by$x == by$y)
+    {
+        by_clause <- by_x
+    }
+    else
+    {
+        by_y <- escape(ident(by$y))
+        by_clause <- kql(ident(sprintf("$left.%s == $right.%s", by_x, by_y)))
+    }
+
     kind <- switch(join_type,
                    "inner_join" = "inner",
                    "left_join" = "leftouter",
@@ -171,7 +185,7 @@ kql_build.op_join <- function(op, ...)
                    "anti_join" = "leftanti",
                    "inner")
 
-    build_kql("join kind = ", ident(kind), " (", kql(kql_render(kql_build(op$y))), ") on ", ident(op$args$by$x))
+    build_kql("join kind = ", ident(kind), " (", kql(kql_render(kql_build(op$y))), ") on ", by_clause)
 }
 
 append_asc <- function(dot)

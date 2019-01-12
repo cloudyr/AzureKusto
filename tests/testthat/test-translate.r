@@ -232,7 +232,18 @@ right <- iris %>%
     group_by(Species) %>%
     summarize(MaxSepalLength = max(Sepal.Length, na.rm = TRUE))
 
+right2 <- iris %>%
+    rename(SepalWidth = Sepal.Width) %>%
+    group_by(Species, SepalWidth) %>%
+    summarize(MaxSepalLength = max(Sepal.Length, na.rm = TRUE))
+
+right3 <- right2 %>% rename(Species2 = Species)
+
 right <- tbl_abstract(right, "iris2", src = simulate_kusto())
+
+right2 <- tbl_abstract(right2, "iris2", src = simulate_kusto())
+
+right3 <- tbl_abstract(right3, "iris3", src = simulate_kusto())
 
 test_that("inner_join() on a single column translates correctly",
 {
@@ -243,6 +254,28 @@ test_that("inner_join() on a single column translates correctly",
     q_str <- show_query(q)
 
     expect_equal(q_str, kql("database('local_df').iris\n| join kind = inner (database('local_df').iris2) on Species"))
+})
+
+test_that("inner_join() on two columns translates correctly",
+{
+    
+    q <- left %>%
+        inner_join(right2, by = c("Species", "SepalWidth"))
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').iris\n| join kind = inner (database('local_df').iris2) on Species, SepalWidth"))
+})
+
+test_that("inner_join() on one differently named column translates correctly",
+{
+    
+    q <- left %>%
+        inner_join(right3, by = c("Species" = "Species2"))
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').iris\n| join kind = inner (database('local_df').iris3) on $left.Species == $right.Species2"))
 })
 
 test_that("left_join() on a single column translates correctly",
