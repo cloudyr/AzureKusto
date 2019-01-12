@@ -27,7 +27,6 @@ Imports:
     tidyselect (>= 0.2.4)
 Suggests:
     knitr,
-    DBItest,
     testthat
 Roxygen: list(markdown=TRUE)
 RoxygenNote: 6.1.0.9000
