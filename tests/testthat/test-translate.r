@@ -346,7 +346,6 @@ test_that("anti_join() on a single column translates correctly",
 
 test_that("union_all translates correctly",
 {
-
     tbl_iris_2 <- tbl_abstract(iris, "iris", src=simulate_kusto())
 
     q <- tbl_iris %>%

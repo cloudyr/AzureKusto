@@ -139,6 +139,30 @@ union_all.tbl_abstract <- function(x, y, ...)
     add_op_set_op(x, y, "union_all")
 }
 
+#' @export
+union.tbl_abstract <- function(x, y, ...)
+{
+    stop("Kusto does not support union(). Please use union_all() instead.")
+}
+
+#' @export
+setdiff.tbl_abstract <- function(x, y, ...)
+{
+    stop("Kusto does not support setdiff() at this time.")
+}
+
+#' @export
+setequal.tbl_abstract <- function(x, y, ...)
+{
+    stop("Kusto does not support setequal() at this time.")
+}
+
+#' @export
+intersect.tbl_abstract <- function(x, y, ...)
+{
+    stop("Kusto does not support intersect() at this time.")
+}
+
 tbl_vars.tbl_abstract <- function(x)
 {
     op_vars(x$ops)
