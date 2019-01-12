@@ -173,7 +173,7 @@ kql_build.op_join <- function(op, ...)
     else
     {
         by_y <- escape(ident(by$y))
-        by_clause <- kql(ident(sprintf("$left.%s == $right.%s", by_x, by_y)))
+        by_clause <- kql(ident(paste0(mapply(build_by_clause, by$x, by$y), collapse = ", ")))
     }
 
     kind <- switch(join_type,
@@ -290,4 +290,9 @@ kql_query <- function(ops, src)
         ),
         class = "kql_query"
     )
+}
+
+build_by_clause <- function(x, y )
+{
+    sprintf("$left.%s == $right.%s", x, y)
 }
