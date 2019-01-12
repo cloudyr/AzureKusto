@@ -72,6 +72,12 @@ add_op_join <- function(type, x, y, by = NULL, suffix = NULL, ...)
     x
 }
 
+add_op_set_op <- function(x, y, type, ...)
+{
+    x$ops <- op_double("set_op", x, y, args = list(type = type))
+    x
+}
+
 join_vars <- function(x_names, y_names, type, by, suffix = c(".x", ".y"))
 {
     # Remove join keys from y's names

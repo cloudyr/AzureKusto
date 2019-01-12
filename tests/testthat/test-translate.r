@@ -343,3 +343,17 @@ test_that("anti_join() on a single column translates correctly",
 
     expect_equal(q_str, kql("database('local_df').iris\n| join kind = leftanti (database('local_df').iris2) on Species"))
 })
+
+test_that("union_all translates correctly",
+{
+
+    tbl_iris_2 <- tbl_abstract(iris, "iris", src=simulate_kusto())
+
+    q <- tbl_iris %>%
+        union_all(tbl_iris_2)
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').iris\n| union kind = outer (database('local_df').iris)"))
+    
+})

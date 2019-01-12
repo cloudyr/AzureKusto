@@ -133,6 +133,12 @@ anti_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
     add_op_join("anti_join", x, y, by = by, suffix = suffix, ...)
 }
 
+#' @export
+union_all.tbl_abstract <- function(x, y, ...)
+{
+    add_op_set_op(x, y, "union_all")
+}
+
 tbl_vars.tbl_abstract <- function(x)
 {
     op_vars(x$ops)

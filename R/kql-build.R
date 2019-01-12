@@ -188,6 +188,17 @@ kql_build.op_join <- function(op, ...)
     build_kql("join kind = ", ident(kind), " (", kql(kql_render(kql_build(op$y))), ") on ", by_clause)
 }
 
+kql_build.op_set_op <- function(op, ...)
+{
+    op_type <- op$args$type
+    
+    kind <- switch(op_type,
+                   "union_all" = "outer",
+                   "inner")
+    
+    build_kql("union kind = ", ident(kind), " (", kql(kql_render(kql_build(op$y))), ")")
+}
+
 append_asc <- function(dot)
 {
     if (class(dot[[2]]) == "name")
