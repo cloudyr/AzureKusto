@@ -180,6 +180,12 @@ op_grps.tbl_abstract <- function(op)
 }
 
 #' @export
+op_grps.tbl_df <- function(op)
+{
+    character()
+}
+
+#' @export
 op_vars <- function(op) UseMethod("op_vars")
 
 #' @export
@@ -257,4 +263,10 @@ op_vars.op_set_op <- function(op)
 op_vars.tbl_abstract <- function(op)
 {
     op_vars(op$ops)
+}
+
+#' @export
+op_vars.tbl_df <- function(op)
+{
+    names(op)
 }

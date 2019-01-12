@@ -11,7 +11,6 @@ kql_build <- function(op)
 #' @export
 kql_build.tbl_abstract <- function(op)
 {
-    # only used for testing
     q <- flatten_query(op$ops)
     built_q <- lapply(q, kql_build)
     kql_query(built_q, src=op$src)
@@ -158,6 +157,23 @@ kql_build.op_head <- function(op, ...)
     build_kql("take ", kql(escape(n, parens = FALSE)))
 }
 
+#' @export
+kql_build.op_join <- function(op, ...)
+{
+    join_type <- op$args$type
+
+    kind <- switch(join_type,
+                   "inner_join" = "inner",
+                   "left_join" = "leftouter",
+                   "right_join" = "rightouter",
+                   "full_join" = "fullouter",
+                   "semi_join" = "leftsemi",
+                   "anti_join" = "leftanti",
+                   "inner")
+
+    build_kql("join kind = ", ident(kind), " (", kql(kql_render(kql_build(op$y))), ") on ", ident(op$args$by$x))
+}
+
 append_asc <- function(dot)
 {
     if (class(dot[[2]]) == "name")
@@ -183,27 +199,46 @@ append_asc <- function(dot)
 #' @export
 flatten_query <- function(op, ops=list())
 {
-    flat_op <- op
-    flat_op$x <- NULL
-    flat_op$vars <- op_vars(op)
-    flat_op$groups <- op_grps(op)
+    if (inherits(op, "tbl_df"))
+    {
+        return(ops)
+    }
+    
+    if (inherits(op, "tbl_abstract"))
+    {
+        flat_op <- op$ops
+    }
+    else
+    {
+        flat_op <- op
+    }
+    
+    flat_op$vars <- op_vars(flat_op)
+    flat_op$groups <- op_grps(flat_op)
 
-    if (length(ops) == 0) {
+    if (length(ops) == 0)
+    {
         new_ops <- list(flat_op)
-    } else {
+    }
+    else
+    {
         new_ops <- prepend(ops, list(flat_op))
     }
-    if (inherits(op, "op_base")){
+    if (inherits(op, "op_base"))
+    {
         return(new_ops)
-    } else {
-        flatten_query(op$x, new_ops)
+    }
+    else
+    {
+        flatten_query(flat_op$x, new_ops)
     }
 }
 
 kql_clause_select <- function(select)
 {
     stopifnot(is.character(select))
-    if (is_empty(select)) {
+    if (is_empty(select))
+    {
         abort("Query contains no columns")
     }
 
@@ -225,7 +260,8 @@ kql_clause_distinct <- function(distinct)
 
 kql_clause_filter <- function(where)
 {
-    if (length(where) > 0L) {
+    if (length(where) > 0L)
+    {
         where_paren <- escape(where, parens = FALSE)
         build_kql("where ", kql_vector(where_paren, collapse = " and "))
     }
