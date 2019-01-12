@@ -12,8 +12,10 @@ run_query.kusto_database_endpoint <- function(database, query, ...)
     user <- database$user
     password <- database$pwd
 
-    # obtain token: note priority order
-    token <- coalesce(database$token$credentials$access_token, database$usertoken, database$apptoken)
+    # token can be a string or an object of class AzureRMR::AzureToken
+    token <- if(is_azure_token(database$token))
+        database$token$credentials$access_token
+    else database$token
 
     uri <- paste0(server, "/v1/rest/query")
     parse_query_result(call_kusto(token, user, password, uri, database$database, query, ...))
@@ -34,8 +36,10 @@ run_command.kusto_database_endpoint <- function(database, command, ...)
     user <- database$user
     password <- database$pwd
 
-    # obtain token: note priority order
-    token <- coalesce(database$token$credentials$access_token, database$usertoken, database$apptoken)
+    # token can be a string or an object of class AzureRMR::AzureToken
+    token <- if(is_azure_token(database$token))
+        database$token$credentials$access_token
+    else database$token
 
     uri <- paste0(server, "/v1/rest/mgmt")
     parse_command_result(call_kusto(token, user, password, uri, database$database, command, ...))
