@@ -4,7 +4,7 @@
 \alias{tbl_abstract}
 \title{Create a local lazy tbl}
 \usage{
-tbl_abstract(df, src = NULL)
+tbl_abstract(df, table_name, src = NULL)
 }
 \description{
 Useful for testing KQL generation without a remote connection.
