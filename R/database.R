@@ -25,9 +25,10 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
 
     # if .azure_token arg not supplied, get it from other properties
     if(is.null(props$token))
-        props$token <- find_kusto_token(props)
+        props$token <- find_token(props)
     if(is.null(props$token))
-        stop("Unable to obtain Azure Active Directory token", call.=FALSE)
+        stop("Only logins with Azure Active Directory are currently supported, unable to acquire token",
+            call.=FALSE)
 
     class(props) <- "kusto_database_endpoint"
     props
@@ -82,12 +83,12 @@ normalize_properties <- function(properties)
 # token should be a string or an object of class AzureRMR::AzureToken
 validate_kusto_token <- function(token)
 {
-    if(!(is.character(token) && length(token) == 1) || is_azure_token(token))
+    if(!(is.character(token) && length(token) == 1) && !AzureRMR::is_azure_token(token))
         stop("Token should be a string or an object of class AzureRMR::AzureToken", call.=FALSE)
 }
 
 
-find_kusto_token <- function(properties)
+find_token <- function(properties)
 {
     # properties to check for token: usertoken, apptoken, appclientid, appkey
     if(!is_empty(properties$usertoken))
@@ -103,9 +104,9 @@ find_kusto_token <- function(properties)
     if(!is_empty(properties$appclientid))
     {
         # possibilities for authenticating with AAD:
-        # - appid + appkey
         # - appid + username + userpwd
-        # - appid only
+        # - appid + appkey
+        # - appid only (auth_code/device_code flow)
         token_pwd <- token_user <- NULL
 
         if(!is_empty(properties$user) && !is_empty(properties$pwd))
