@@ -9,7 +9,7 @@ get_kusto_token <- function(cluster, location=NULL, tenant, refresh=TRUE)
     tenant <- normalize_tenant(tenant)
     location <- normalize_location(location)
     cluster <- normalize_cluster(cluster, location)
-    host <- paste0("https://", cluster, ".kusto.windows.net")
+    server <- paste0("https://", cluster, ".kusto.windows.net/")
 
     filename <- file.path(config_dir(), paste(cluster, "-", tenant))
     if(!file.exists(filename))
@@ -31,9 +31,9 @@ create_kusto_token <- function(cluster, location=NULL, tenant)
     tenant <- normalize_tenant(tenant)
     location <- normalize_location(location)
     cluster <- normalize_cluster(cluster, location)
-    host <- paste0("https://", cluster, ".kusto.windows.net")
+    server <- paste0("https://", cluster, ".kusto.windows.net/")
 
-    token <- AzureRMR::get_azure_token(resource_host=host,
+    token <- AzureRMR::get_azure_token(resource_host=server,
         tenant=tenant,
         app=.kusto_app_id,
         auth_type="device_code",
