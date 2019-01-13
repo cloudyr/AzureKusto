@@ -63,7 +63,7 @@ public=list(
         tenant
     },
 
-    get_token=function(tenant=self$get_default_tenant())
+    get_aad_token=function(tenant=self$get_default_tenant())
     {
         get_kusto_token(self$name, normalize_location(self$location), tenant=tenant)
     }
