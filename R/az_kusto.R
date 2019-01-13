@@ -69,3 +69,9 @@ public=list(
     }
 ))
 
+
+#' @export
+is_kusto_cluster <- function(x)
+{
+    R6::is.R6(x) && inherits(x, "az_kusto")
+}

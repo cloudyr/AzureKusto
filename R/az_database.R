@@ -77,3 +77,10 @@ public=list(
         kusto_query_endpoint(server=server, database=database, tenantid=tenant, fed=TRUE, .azure_token=token)
     }
 ))
+
+
+#' @export
+is_kusto_database <- function(x)
+{
+    R6::is.R6(x) && inherits(x, "az_kusto_database")
+}
