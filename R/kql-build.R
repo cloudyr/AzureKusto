@@ -51,13 +51,10 @@ kql_build.op_filter <- function(op, ...)
 #' @export
 kql_build.op_distinct <- function(op, ...)
 {
-    if (length(op$dots) == 0){
+    if (is_empty(op$dots))
         cols <- op$vars
-    }
     else
-    {
         cols <- tidyselect::vars_select(op$vars, !!! op$dots)
-    }
 
     kql_clause_distinct(ident(cols))
 }
@@ -65,7 +62,7 @@ kql_build.op_distinct <- function(op, ...)
 #' @export
 kql_build.op_rename <- function(op, ...)
 {
-    assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    assigned_exprs <- mapply(get_expr, op$dots)
     stmts <- lapply(assigned_exprs, translate_kql)
     pieces <- lapply(seq_along(assigned_exprs),
                      function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
@@ -81,7 +78,7 @@ kql_build.op_rename <- function(op, ...)
 #' @export
 kql_build.op_mutate <- function(op, ...)
 {
-    assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    assigned_exprs <- mapply(get_expr, op$dots)
     calls <- unlist(mapply(all_calls, assigned_exprs))
     calls_agg <- mapply(is_agg, calls)
     groups <- build_kql(escape(ident(op$groups), collapse = ", "))
@@ -129,7 +126,7 @@ kql_build.op_arrange <- function(op, ...)
 #' @export
 kql_build.op_summarise <- function(op, ...)
 {
-    assigned_exprs <- mapply(rlang::get_expr, op$dots)
+    assigned_exprs <- mapply(get_expr, op$dots)
     stmts <- mapply(translate_kql, assigned_exprs)
     pieces <- lapply(seq_along(assigned_exprs),
                      function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
@@ -165,11 +162,9 @@ kql_build.op_join <- function(op, ...)
     by <- op$args$by
 
     by_x <- escape(ident(by$x))
-    
-    if (by$x == by$y)
-    {
+
+    if (identical(by$x, by$y))
         by_clause <- by_x
-    }
     else
     {
         by_y <- escape(ident(by$y))
@@ -191,32 +186,25 @@ kql_build.op_join <- function(op, ...)
 kql_build.op_set_op <- function(op, ...)
 {
     op_type <- op$args$type
-    
+
     kind <- switch(op_type,
                    "union_all" = "outer",
                    "inner")
-    
+
     build_kql("union kind = ", ident(kind), " (", kql(kql_render(kql_build(op$y))), ")")
 }
 
 append_asc <- function(dot)
 {
-    if (class(dot[[2]]) == "name")
-    {
+    if (inherits(dot[[2]], "name"))
         dot[[2]] <- call2(expr(asc), dot[[2]])
-    }
-    else if (class(dot[[2]]) == "call")
-    {
+    else if (inherits(dot[[2]], "call"))
         if (dot[[2]][[1]] != expr("desc"))
-        {
             dot[[2]] <- call2(expr(asc), dot[[2]])
-        } else
-        {
+        else
             dot
-        }
-    } else {
+    else
         dot
-    }
 }
 
 #' Walks the tree of ops and builds a stack.
@@ -225,47 +213,31 @@ append_asc <- function(dot)
 flatten_query <- function(op, ops=list())
 {
     if (inherits(op, "tbl_df"))
-    {
         return(ops)
-    }
-    
+
     if (inherits(op, "tbl_abstract"))
-    {
         flat_op <- op$ops
-    }
     else
-    {
         flat_op <- op
-    }
-    
+
     flat_op$vars <- op_vars(flat_op)
     flat_op$groups <- op_grps(flat_op)
 
-    if (length(ops) == 0)
-    {
+    if (is_empty(ops))
         new_ops <- list(flat_op)
-    }
     else
-    {
         new_ops <- prepend(ops, list(flat_op))
-    }
     if (inherits(op, "op_base"))
-    {
         return(new_ops)
-    }
     else
-    {
         flatten_query(flat_op$x, new_ops)
-    }
 }
 
 kql_clause_select <- function(select)
 {
     stopifnot(is.character(select))
     if (is_empty(select))
-    {
         abort("Query contains no columns")
-    }
 
     build_kql(
         "project ",
@@ -285,7 +257,7 @@ kql_clause_distinct <- function(distinct)
 
 kql_clause_filter <- function(where)
 {
-    if (length(where) > 0L)
+    if (!is_empty(where))
     {
         where_paren <- escape(where, parens = FALSE)
         build_kql("where ", kql_vector(where_paren, collapse = " and "))

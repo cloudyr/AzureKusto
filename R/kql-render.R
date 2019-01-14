@@ -9,15 +9,13 @@ kql_render.kql_query <- function(q)
 {
     tblname <- sprintf("database('%s').%s", q$src$database, escape(ident(q$src$table)))
     q_str <- paste(unlist(q$ops[-1]), collapse = "\n| ")
-    if (nchar(q_str) > 0) {
+
+    if (nchar(q_str) > 0)
         q_str <- kql(paste(tblname, q_str, sep="\n| "))
-    } else {
+    else
         q_str <- tblname
-    }
 
-    cat(q_str, "\n")
-
-    invisible(q_str)
+    q_str
 }
 
 #' @export

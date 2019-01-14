@@ -17,7 +17,6 @@ test_that("identifiers are comma separated", {
 test_that("zero length inputs yield zero length output when not collapsed", {
   expect_equal(kql_vector(kql(), collapse = NULL), kql())
   expect_equal(kql_vector(ident(), collapse = NULL), kql())
-  expect_equal(kql_vector(ident_q(), collapse = NULL), kql())
 })
 
 test_that("zero length inputs yield length-1 output when collapsed", {
@@ -25,8 +24,6 @@ test_that("zero length inputs yield length-1 output when collapsed", {
   expect_equal(kql_vector(kql(), parens = TRUE, collapse = ""), kql("()"))
   expect_equal(kql_vector(ident(), parens = FALSE, collapse = ""), kql(""))
   expect_equal(kql_vector(ident(), parens = TRUE, collapse = ""), kql("()"))
-  expect_equal(kql_vector(ident_q(), parens = FALSE, collapse = ""), kql(""))
-  expect_equal(kql_vector(ident_q(), parens = TRUE, collapse = ""), kql("()"))
 })
 
 # Special values ----------------------------------------------------------------

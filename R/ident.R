@@ -1,26 +1,20 @@
-c_character <- function(...) {
-  x <- c(...)
-  if (length(x) == 0) {
-    return(character())
-  }
+c_character <- function(...)
+{
+    x <- c(...)
+    if (is_empty(x))
+        return(character())
 
-  if (!is.character(x)) {
-    stop("Character input expected", call. = FALSE)
-  }
+    if (!is.character(x))
+        stop("Character input expected", call. = FALSE)
 
-  x
+    x
 }
 
 #' Flag a character string as an identifier
-ident <- function(...) {
-  x <- c_character(...)
-  structure(x, class = c("ident", "character"))
+ident <- function(...)
+{
+    x <- c_character(...)
+    structure(x, class = c("ident", "character"))
 }
-setOldClass(c("ident", "character"), ident())
 
-#' @export
-ident_q <- function(...) {
-  x <- c_character(...)
-  structure(x, class = c("ident_q", "ident", "character"))
-}
-setOldClass(c("ident_q", "ident", "character"), ident_q())
+setOldClass(c("ident", "character"), ident())

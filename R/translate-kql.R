@@ -5,23 +5,18 @@ translate_kql <- function(...)
 {
     dots <- quos(...)
 
-    if (length(dots) == 0)
-    {
-        return(kql())
-    }
+    if (is_empty(dots)) return(kql())
 
     stopifnot(is.list(dots))
 
-    if (!any(have_name(dots))) {
-        names(dots) <- NULL
-    }
+    if (!any(have_name(dots))) names(dots) <- NULL
 
     variant <- kql_translate_env()
     pieces <- lapply(dots, function(x)
     {
-        if (is_atomic(get_expr(x))) {
+        if (is_atomic(get_expr(x)))
             escape(get_expr(x))
-        } else {
+        else {
             mask <- kql_mask(x, variant)
             escape(eval_tidy(x, mask))
         }
@@ -57,7 +52,8 @@ kql_mask <- function(expr, variant)
 # character vector -> environment
 ceply <- function(x, f, ..., parent = parent.frame())
 {
-    if (length(x) == 0) return(new.env(parent = parent))
+    if (is_empty(x)) return(new.env(parent = parent))
+
     l <- lapply(x, f, ...)
     names(l) <- x
     list2env(l, parent = parent)
@@ -88,7 +84,8 @@ kql_translator <- function(..., .funs = list(),
                            .parent = new.env(parent = emptyenv()))
 {
     funs <- c(list(...), .funs)
-    if (length(funs) == 0) return(.parent)
+
+    if (is_empty(funs)) return(.parent)
 
     list2env(funs, copy_env(.parent))
 }
@@ -112,7 +109,7 @@ kql_infix <- function(f)
 kql_prefix <- function(f, n = NULL)
 {
     stopifnot(is.character(f))
-    
+
     function(...)
     {
         args <- list(...)
@@ -123,9 +120,9 @@ kql_prefix <- function(f, n = NULL)
             )
         }
 
-        if (any(names2(args) != "")) {
+        if (any(names2(args) != ""))
             warning("Named arguments ignored for ", f, call. = FALSE)
-        }
+
         build_kql(kql(f), args)
     }
 }
@@ -154,9 +151,7 @@ kql_window <- function(f)
 
 check_na_rm <- function(f, na.rm)
 {
-    if (identical(na.rm, TRUE)) {
-        return()
-    }
+    if (identical(na.rm, TRUE)) return()
 
     warning(
         "Missing values are always removed in KQL.\n",
@@ -194,14 +189,21 @@ default_op <- function(x)
 {
     stopifnot(is.character(x))
 
-    if (is_infix_base(x)) {
+    if (is_infix_base(x))
+    {
         kql_infix(x)
-    } else if (is_infix_user(x)) {
+    }
+    else if (is_infix_user(x))
+    {
         x <- substr(x, 2, nchar(x) - 1)
         kql_infix(x)
-    } else {
+    }
+    else
+    {
         kql_prefix(x)
     }
+
+
 }
 
 #' @export
@@ -211,16 +213,15 @@ base_scalar <- kql_translator(
     `/`    = kql_infix("/"),
     `%%`   = kql_infix("%"),
     `^`    = kql_prefix("power", 2),
-    `-`    = function(x, y = NULL) {
-        if (is.null(y)) {
-            if (is.numeric(x)) {
+    `-`    = function(x, y = NULL)
+    {
+        if (is.null(y))
+            if (is.numeric(x))
                 -x
-            } else {
+            else
                 build_kql(kql("-"), x)
-            }
-        } else {
+        else
             build_kql(x, kql(" - "), y)
-        }
     },
     `!=`    = kql_infix("!="),
     `==`    = kql_infix("=="),
@@ -281,7 +282,7 @@ base_scalar <- kql_translator(
     sqrt    = kql_prefix("sqrt", 1),
     tan     = kql_prefix("tan", 1),
     tanh     = kql_prefix("tanh", 1),
-    
+
     tolower = kql_prefix("tolower", 1),
     toupper = kql_prefix("toupper", 1),
     #trimws = kql_prefix("trim", 1),
@@ -393,14 +394,11 @@ is_agg <- function(f)
     ef <- enexpr(f)
 
     if (is.symbol(ef))
-    {
         sf <- as_string(ef)
-    } else if (typeof(ef) == "character")
-    {
+    else if (typeof(ef) == "character")
         sf <- ef
-    } else {
+    else
         return(FALSE)
-    }
 
     sf %in% ls(base_agg)
 }

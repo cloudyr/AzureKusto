@@ -84,9 +84,7 @@ join_vars <- function(x_names, y_names, type, by, suffix = c(".x", ".y"))
     y_names <- setdiff(y_names, by$y)
 
     if(!is.character(suffix) || length(suffix) != 2)
-    {
         stop("`suffix` must be a character vector of length 2.", call. = FALSE)
-    }
 
     suffix <- list(x = suffix[1], y = suffix[2])
     x_new <- add_suffixes(x_names, y_names, suffix$x)
@@ -112,16 +110,14 @@ join_vars <- function(x_names, y_names, type, by, suffix = c(".x", ".y"))
 
 add_suffixes <- function(x, y, suffix)
 {
-    if (identical(suffix, "")) {
-        return(x)
-    }
+    if (identical(suffix, "")) return(x)
 
     out <- chr_along(x)
-    for (i in seq_along(x)) {
+    for (i in seq_along(x))
+    {
         nm <- x[[i]]
-        while (nm %in% y || nm %in% out) {
+        while (nm %in% y || nm %in% out)
             nm <- paste0(nm, suffix)
-        }
 
         out[[i]] <- nm
     }
@@ -137,11 +133,10 @@ op_grps.op_base <- function(op) character()
 #' @export
 op_grps.op_group_by <- function(op)
 {
-    if (isTRUE(op$args$add)) {
+    if (isTRUE(op$args$add))
         union(op_grps(op$x), names(op$dots))
-    } else {
+    else
         names(op$dots)
-    }
 }
 
 #' @export
@@ -154,12 +149,6 @@ op_grps.op_ungroup <- function(op)
 op_grps.op_summarise <- function(op)
 {
     grps <- op_grps(op$x)
-    ## if (length(grps) == 1)
-    ## {
-    ##     character()
-    ## } else {
-    ##     grps[-length(grps)]
-    ## }
 }
 
 #' @export
@@ -221,12 +210,10 @@ op_vars.op_summarise <- function(op)
 #' @export
 op_vars.op_distinct <- function(op)
 {
-    if (length(op$dots) == 0) {
+    if (is_empty(op$dots))
         op_vars(op$x)
-    } else  {
-                                        #c(op_grps(op$x), names(op$dots))
+    else
         unique(c(op_vars(op$x), names(op$dots)))
-    }
 }
 
 #' @export

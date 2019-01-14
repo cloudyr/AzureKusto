@@ -65,7 +65,7 @@ group_by.tbl_abstract <- function(.data, ..., add = FALSE)
 {
     dots <- quos(...)
 
-    if (length(dots) == 0)
+    if (is_empty(dots))
     {
         return(.data)
     }
@@ -195,7 +195,7 @@ tbl_kusto <- function(kusto_database, table_name, ...)
 {
     stopifnot(inherits(kusto_database, "kusto_database_endpoint"))
     kusto_database$table <- table_name
-    vars <- names(run_query(kusto_database, sprintf("%s | take 1", escape(ident(table_name)))))   
+    vars <- names(run_query(kusto_database, sprintf("%s | take 1", escape(ident(table_name)))))
     ops <- op_base_remote(table_name, vars)
     make_tbl(c("kusto", "abstract"), src = kusto_database, ops = ops)
 }
