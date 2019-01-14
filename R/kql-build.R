@@ -9,7 +9,7 @@ kql_build <- function(op)
 }
 
 #' @export
-kql_build.tbl_abstract <- function(op)
+kql_build.tbl_kusto_abstract <- function(op)
 {
     q <- flatten_query(op$ops)
     built_q <- lapply(q, kql_build)
@@ -215,7 +215,7 @@ flatten_query <- function(op, ops=list())
     if (inherits(op, "tbl_df"))
         return(ops)
 
-    if (inherits(op, "tbl_abstract"))
+    if (inherits(op, "tbl_kusto_abstract"))
         flat_op <- op$ops
     else
         flat_op <- op

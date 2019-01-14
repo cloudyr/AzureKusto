@@ -8,52 +8,52 @@
 #' library(dplyr)
 #' df <- data.frame(x = 1, y = 2)
 #'
-#' df <- tbl_abstract(df, src = simulate_kusto())
+#' df <- tbl_kusto_abstract(df, src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
-tbl_abstract <- function(df, table_name, src = NULL) {
+tbl_kusto_abstract <- function(df, table_name, src = NULL) {
   src$table <- table_name
-  make_tbl("abstract", ops = op_base_local(df), src = src)
+  make_tbl("kusto_abstract", ops = op_base_local(df), src = src)
 }
 
-setOldClass(c("tbl_abstract", "tbl"))
+setOldClass(c("tbl_kusto_abstract", "tbl"))
 
 #' @export
-select.tbl_abstract <- function(.data, ...)
+select.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     add_op_single("select", .data, dots = dots)
 }
 
 #' @export
-distinct.tbl_abstract <- function(.data, ...)
+distinct.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     add_op_single("distinct", .data, dots = dots)
 }
 
 #' @export
-rename.tbl_abstract <- function(.data, ...)
+rename.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     add_op_single("rename", .data, dots = dots)
 }
 
 #' @export
-filter.tbl_abstract <- function(.data, ...)
+filter.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     add_op_single("filter", .data, dots = dots)
 }
 
 #' @export
-mutate.tbl_abstract <- function(.data, ...)
+mutate.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(..., .named=TRUE)
     add_op_single("mutate", .data, dots = dots)
 }
 
 #' @export
-arrange.tbl_abstract <- function(.data, ...)
+arrange.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     names(dots) <- NULL
@@ -61,7 +61,7 @@ arrange.tbl_abstract <- function(.data, ...)
 }
 
 #' @export
-group_by.tbl_abstract <- function(.data, ..., add = FALSE)
+group_by.tbl_kusto_abstract <- function(.data, ..., add = FALSE)
 {
     dots <- quos(...)
 
@@ -79,91 +79,91 @@ group_by.tbl_abstract <- function(.data, ..., add = FALSE)
 }
 
 #' @export
-ungroup.tbl_abstract <- function(.data, ...)
+ungroup.tbl_kusto_abstract <- function(.data, ...)
 {
     add_op_single("ungroup", .data)
 }
 
 #' @export
-summarise.tbl_abstract <- function(.data, ...)
+summarise.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(..., .named = TRUE)
     add_op_single("summarise", .data, dots = dots)
 }
 
 #' @export
-head.tbl_abstract <- function(.data, n = 6L, ...)
+head.tbl_kusto_abstract <- function(.data, n = 6L, ...)
 {
     add_op_single("head", .data, args = list(n = n))
 }
 
 #' @export
-inner_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+inner_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
 {
     add_op_join("inner_join", x, y, by = by, suffix = suffix, ...)
 }
 
 #' @export
-left_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+left_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
 {
     add_op_join("left_join", x, y, by = by, suffix = suffix, ...)
 }
 
 #' @export
-right_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+right_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
 {
     add_op_join("right_join", x, y, by = by, suffix = suffix, ...)
 }
 
 #' @export
-full_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+full_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
 {
     add_op_join("full_join", x, y, by = by, suffix = suffix, ...)
 }
 
 #' @export
-semi_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+semi_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
 {
     add_op_join("semi_join", x, y, by = by, suffix = suffix, ...)
 }
 
 #' @export
-anti_join.tbl_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
+anti_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"), ...)
 {
     add_op_join("anti_join", x, y, by = by, suffix = suffix, ...)
 }
 
 #' @export
-union_all.tbl_abstract <- function(x, y, ...)
+union_all.tbl_kusto_abstract <- function(x, y, ...)
 {
     add_op_set_op(x, y, "union_all")
 }
 
 #' @export
-union.tbl_abstract <- function(x, y, ...)
+union.tbl_kusto_abstract <- function(x, y, ...)
 {
     stop("Kusto does not support union(). Please use union_all() instead.")
 }
 
 #' @export
-setdiff.tbl_abstract <- function(x, y, ...)
+setdiff.tbl_kusto_abstract <- function(x, y, ...)
 {
     stop("Kusto does not support setdiff() at this time.")
 }
 
 #' @export
-setequal.tbl_abstract <- function(x, y, ...)
+setequal.tbl_kusto_abstract <- function(x, y, ...)
 {
     stop("Kusto does not support setequal() at this time.")
 }
 
 #' @export
-intersect.tbl_abstract <- function(x, y, ...)
+intersect.tbl_kusto_abstract <- function(x, y, ...)
 {
     stop("Kusto does not support intersect() at this time.")
 }
 
-tbl_vars.tbl_abstract <- function(x)
+tbl_vars.tbl_kusto_abstract <- function(x)
 {
     op_vars(x$ops)
 }
@@ -181,7 +181,7 @@ simulate_kusto <- function()
 }
 
 #' @export
-show_query.tbl_abstract <- function(tbl)
+show_query.tbl_kusto_abstract <- function(tbl)
 {
     qry <- kql_build(tbl)
     kql_render(qry)
@@ -197,7 +197,7 @@ tbl_kusto <- function(kusto_database, table_name, ...)
     kusto_database$table <- table_name
     vars <- names(run_query(kusto_database, sprintf("%s | take 1", escape(ident(table_name)))))
     ops <- op_base_remote(table_name, vars)
-    make_tbl(c("kusto", "abstract"), src = kusto_database, ops = ops)
+    make_tbl(c("kusto", "kusto_abstract"), src = kusto_database, ops = ops)
 }
 
 #' Compile the preceding dplyr oprations into a kusto query, execute it on the remote server,

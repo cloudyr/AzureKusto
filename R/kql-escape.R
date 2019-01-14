@@ -47,15 +47,13 @@ escape.logical <- function(x, parens = NA, collapse = ", ")
 #' @export
 escape.factor <- function(x, parens = NA, collapse = ", ")
 {
-    x <- as.character(x)
-    escape.character(x, parens = parens, collapse = collapse)
+    escape(as.character(x), parens = parens, collapse = collapse)
 }
 
 #' @export
 escape.Date <- function(x, parens = NA, collapse = ", ")
 {
-    x <- as.character(x)
-    escape.character(x, parens = parens, collapse = collapse)
+    escape(as.character(x), parens = parens, collapse = collapse)
 }
 
 #' @export

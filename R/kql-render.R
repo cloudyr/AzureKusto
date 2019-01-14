@@ -19,7 +19,7 @@ kql_render.kql_query <- function(q)
 }
 
 #' @export
-kql_render.tbl_abstract <- function(query, ...)
+kql_render.tbl_kusto_abstract <- function(query, ...)
 {
     # only used for testing
     qry <- kql_build(query$ops, ...)

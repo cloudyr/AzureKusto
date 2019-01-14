@@ -169,7 +169,7 @@ op_grps.op_double <- function(op)
 }
 
 #' @export
-op_grps.tbl_abstract <- function(op)
+op_grps.tbl_kusto_abstract <- function(op)
 {
     op_grps(op$ops)
 }
@@ -253,7 +253,7 @@ op_vars.op_set_op <- function(op)
 }
 
 #' @export
-op_vars.tbl_abstract <- function(op)
+op_vars.tbl_kusto_abstract <- function(op)
 {
     op_vars(op$ops)
 }

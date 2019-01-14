@@ -10,6 +10,7 @@ Description: Interface to 'Kusto'/'Azure Data Explorer'
 URL: https://github.com/cloudyr/AzureKusto
 BugReports: https://github.com/cloudyr/AzureKusto/issues
 License: MIT + file LICENSE
+Encoding: UTF-8
 VignetteBuilder: knitr
 Depends:
     R (>= 3.3)

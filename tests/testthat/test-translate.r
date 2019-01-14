@@ -3,7 +3,7 @@ library(dplyr)
 
 tbl_iris <- tibble::as.tibble(iris)
 names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-tbl_iris <- tbl_abstract(tbl_iris, "iris", src = simulate_kusto())
+tbl_iris <- tbl_kusto_abstract(tbl_iris, "iris", src = simulate_kusto())
 
 test_that("select is translated to project",
 {
@@ -239,11 +239,11 @@ right2 <- iris %>%
 
 right3 <- right2 %>% rename(Species2 = Species, SepalWidth2 = SepalWidth)
 
-right <- tbl_abstract(right, "iris2", src = simulate_kusto())
+right <- tbl_kusto_abstract(right, "iris2", src = simulate_kusto())
 
-right2 <- tbl_abstract(right2, "iris2", src = simulate_kusto())
+right2 <- tbl_kusto_abstract(right2, "iris2", src = simulate_kusto())
 
-right3 <- tbl_abstract(right3, "iris3", src = simulate_kusto())
+right3 <- tbl_kusto_abstract(right3, "iris3", src = simulate_kusto())
 
 test_that("inner_join() on a single column translates correctly",
 {
@@ -344,7 +344,7 @@ test_that("anti_join() on a single column translates correctly",
 
 test_that("union_all translates correctly",
 {
-    tbl_iris_2 <- tbl_abstract(iris, "iris", src=simulate_kusto())
+    tbl_iris_2 <- tbl_kusto_abstract(iris, "iris", src=simulate_kusto())
 
     q <- tbl_iris %>%
         union_all(tbl_iris_2)
