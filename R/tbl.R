@@ -207,5 +207,5 @@ collect.tbl_kusto <- function(tbl, ...)
 {
     q <- kql_build(tbl)
     q_str <- kql_render(q)
-    as.tibble(run_query(tbl$src, q_str))
+    run_query(tbl$src, q_str)
 }
