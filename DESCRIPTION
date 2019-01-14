@@ -26,7 +26,6 @@ Imports:
     AzureRMR (>= 1.0.0.9000),
     rappdirs,
     dplyr,
-    tibble,
     tidyselect (>= 0.2.4)
 Suggests:
     knitr,
