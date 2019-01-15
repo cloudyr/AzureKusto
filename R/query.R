@@ -13,7 +13,7 @@ run_query.kusto_database_endpoint <- function(database, query, ...)
     password <- database$pwd
 
     # token can be a string or an object of class AzureRMR::AzureToken
-    token <- if(is_azure_token(database$token))
+    token <- if(AzureRMR::is_azure_token(database$token))
         database$token$credentials$access_token
     else database$token
 
@@ -37,7 +37,7 @@ run_command.kusto_database_endpoint <- function(database, command, ...)
     password <- database$pwd
 
     # token can be a string or an object of class AzureRMR::AzureToken
-    token <- if(is_azure_token(database$token))
+    token <- if(AzureRMR::is_azure_token(database$token))
         database$token$credentials$access_token
     else database$token
 
@@ -55,6 +55,13 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     )
     if(!is.null(db))
         body <- c(body, db=db)
+
+    # if this is an AzureToken object, refresh if necessary
+    if(AzureRMR::is_azure_token(token) && !token$validate())
+    {
+        message("Access token has expired or is no longer valid; refreshing")
+        token$refresh()
+    }
 
     auth_str <- if(!is.null(token))
         paste("Bearer", token)
