@@ -25,13 +25,14 @@ test_that("ARM interface works",
     srvname <- Sys.getenv("AZ_TEST_KUSTO")
     srv <- rg$create_kusto_cluster(srvname, wait=TRUE)
 
-    expect_true(is_kusto_cluster(srv)))
+    expect_true(is_kusto_cluster(srv))
 })
 
 
 test_that("Cluster resource functions work",
 {
-    srv <- rg$get_kusto_cluster(srvname))
+    rgname <- Sys.getenv("AZ_TEST_RG")
+    srv <- sub$get_resource_group(rgname)$get_kusto_cluster(srvname)
     expect_true(is_kusto_cluster(srv))
 
     default_tenant <- srv$get_default_tenant()
@@ -52,6 +53,13 @@ test_that("AAD token functions work",
     tok <- get_kusto_token(cluster=srvname, location="australiaeast", tenant=tenant)
     expect_true(AzureRMR::is_azure_token(tok))
 
+    expire <- as.numeric(tok$credentials$expires_on)
+    Sys.sleep(5)
+    tok$refresh()
+    expect_true(as.numeric(tok$credentials$expires_on) > expire)
+
     toks <- list_kusto_tokens()
     expect_true(is.list(toks) && all(sapply(toks, AzureRMR::is_azure_token)))
+
+    expect_null(delete_kusto_token(srvname, "australiaeast", tenant))
 })
