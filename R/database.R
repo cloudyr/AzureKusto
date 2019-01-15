@@ -101,10 +101,11 @@ find_token <- function(properties)
         validate_kusto_token(properties$apptoken)
         return(properties$apptoken)
     }
+
     # if no app ID supplied, insert Kusto app ID
     if(is_empty(properties$appclientid))
     {
-        message("No app ID supplied; using Kusto app ID")
+        message("No app ID supplied; using KustoClient app ID")
         properties$appclientid <- .kusto_app_id
     }
 
@@ -113,16 +114,21 @@ find_token <- function(properties)
     # - appid + appkey
     # - appid only (auth_code/device_code flow)
     token_pwd <- token_user <- NULL
+    auth_type <- "device_code"
 
     if(!is_empty(properties$user) && !is_empty(properties$pwd))
     {
         token_pwd <- properties$pwd
         token_user <- properties$user
+        auth_type <- "resource_owner"
     }
     else if(!is_empty(properties$appkey))
+    {
         token_pwd <- properties$appkey
+        auth_type <- "client_credentials"
+    }
 
     return(AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
-        app=properties$appclientid, password=token_pwd, username=token_user))
+        app=properties$appclientid, password=token_pwd, username=token_user, auth_type=auth_type))
 }
 
