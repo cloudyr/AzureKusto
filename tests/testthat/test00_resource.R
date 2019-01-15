@@ -50,8 +50,8 @@ test_that("AAD token functions work",
 {
     srvname <- Sys.getenv("AZ_TEST_KUSTO")
     tok <- get_kusto_token(cluster=srvname, location="australiaeast", tenant=tenant)
-    expect_true(is_azure_token(tok))
+    expect_true(AzureRMR::is_azure_token(tok))
 
     toks <- list_kusto_tokens()
-    expect_true(is.list(toks) && all(sapply(toks, is_azure_token)))
+    expect_true(is.list(toks) && all(sapply(toks, AzureRMR::is_azure_token)))
 })
