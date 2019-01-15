@@ -138,17 +138,3 @@ convert_types <- function(df, coltypes_df)
 }
 
 
-# get first non-NULL value from a list of candidate values
-coalesce <- function(...)
-{
-    args <- list(...)
-    val <- NULL
-    for(i in seq_along(args))
-    {
-        val <- args[[i]]
-        if(!is.null(val))
-            break
-    }
-    val
-}
-
