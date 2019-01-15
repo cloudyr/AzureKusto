@@ -101,26 +101,28 @@ find_token <- function(properties)
         validate_kusto_token(properties$apptoken)
         return(properties$apptoken)
     }
-    if(!is_empty(properties$appclientid))
+    # if no app ID supplied, insert Kusto app ID
+    if(is_empty(properties$appclientid))
     {
-        # possibilities for authenticating with AAD:
-        # - appid + username + userpwd
-        # - appid + appkey
-        # - appid only (auth_code/device_code flow)
-        token_pwd <- token_user <- NULL
-
-        if(!is_empty(properties$user) && !is_empty(properties$pwd))
-        {
-            token_pwd <- properties$pwd
-            token_user <- properties$user
-        }
-        else if(!is_empty(properties$appkey))
-            token_pwd <- properties$appkey
-
-        return(AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
-            app=properties$appclientid, password=token_pwd, username=token_user))
+        message("No app ID supplied; using Kusto app ID")
+        properties$appclientid <- .kusto_app_id
     }
-    # if no token was found
-    NULL
+
+    # possibilities for authenticating with AAD:
+    # - appid + username + userpwd
+    # - appid + appkey
+    # - appid only (auth_code/device_code flow)
+    token_pwd <- token_user <- NULL
+
+    if(!is_empty(properties$user) && !is_empty(properties$pwd))
+    {
+        token_pwd <- properties$pwd
+        token_user <- properties$user
+    }
+    else if(!is_empty(properties$appkey))
+        token_pwd <- properties$appkey
+
+    return(AzureRMR::get_azure_token(properties$server, tenant=properties$tenantid,
+        app=properties$appclientid, password=token_pwd, username=token_user))
 }
 
