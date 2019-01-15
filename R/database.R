@@ -30,6 +30,10 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
         stop("Only logins with Azure Active Directory are currently supported, unable to acquire token",
             call.=FALSE)
 
+    if(props$token$credentials$resource != props$server)
+        warning(sprintf("Mismatch between server (%s) and token resource (%s)",
+                        props$token$credentials$resource, props$server))
+
     class(props) <- "kusto_database_endpoint"
     props
 }
@@ -105,16 +109,17 @@ find_token <- function(properties)
     # if no app ID supplied, insert Kusto app ID
     if(is_empty(properties$appclientid))
     {
-        message("No app ID supplied; using KustoClient app ID")
+        message("No app ID supplied; using KustoClient app")
         properties$appclientid <- .kusto_app_id
+        auth_type <- "device_code"
     }
+    else auth_type <- NULL  # KustoClient needs devicecode, otherwise let get_azure_token choose
 
     # possibilities for authenticating with AAD:
     # - appid + username + userpwd
     # - appid + appkey
     # - appid only (auth_code/device_code flow)
     token_pwd <- token_user <- NULL
-    auth_type <- "device_code"
 
     if(!is_empty(properties$user) && !is_empty(properties$pwd))
     {

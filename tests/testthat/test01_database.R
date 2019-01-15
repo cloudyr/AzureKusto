@@ -8,58 +8,49 @@ subscription <- Sys.getenv("AZ_TEST_SUBSCRIPTION")
 if(tenant == "" || app == "" || password == "" || subscription == "")
     skip("Tests skipped: ARM credentials not set")
 
-srvname <- Sys.getenv("AZ_TEST_KUSTO")
-if(srvname == "")
-    skip("Database endpoint tests skipped: resource name not set")
+# use persistent testing server
+rgname <- Sys.getenv("AZ_TEST_KUSTO_SERVER_RG")
+srvname <- Sys.getenv("AZ_TEST_KUSTO_SERVER")
+dbname <- Sys.getenv("AZ_TEST_KUSTO_DATABASE")
+if(rgname == "" || srvname == "" || dbname == "")
+    skip("Database endpoint tests skipped: server info not set")
 
-username <- Sys.getenv("AZ_TEST_KUSTO_USERNAME")
-if(username == "")
-    skip("Database tests skipped, username not set")
-
-
-rgname <- Sys.getenv("AZ_TEST_RG")
 rg <- AzureRMR::az_rm$
     new(tenant=tenant, app=app, password=password)$
     get_subscription(subscription)$
     get_resource_group(rgname)
 
 
-dbname <- paste(sample(letters, 10, replace=TRUE), collapse="")
-
-test_that("Database resource functions work",
-{
-    srv <- rg$get_kusto_cluster(srvname))
-    expect_true(is_kusto_cluster(srv))
-
-    db <- srv$create_database(dbname, retention_period=1000, cache_period=30)
-    expect_true(is_kusto_database(db))
-
-    dbs <- srv$list_databases()
-    expect_true(is.list(dbs) && all(sapply(dbs, is_kusto_database)))
-})
-
-
+# should only get one devicecode prompt here at most
 test_that("Database endpoint functions work",
 {
-    srv <- rg$get_kusto_cluster(srvname))
+    srv <- rg$get_kusto_cluster(srvname)
     expect_true(is_kusto_cluster(srv))
 
     db <- srv$get_database(dbname)
     endp1 <- db$get_query_endpoint()
 
     server <- srv$properties$queryUri
-    endp2 <- kusto_query_endpoint(server=server, database=dbname, tenant=tenant)
+    endp2 <- kusto_query_endpoint(server=server, database=dbname, tenantid=tenant)
 
     endp3 <- kusto_query_endpoint(server=server, database=dbname,
-        .azure_token=get_kusto_token(srvname, "australiasoutheast", tenant))
+        .azure_token=get_kusto_token(cluster=srvname, location=srv$location, tenant=tenant))
 
-    conn_str <- sprintf("server=%s;database=%s;tenant=%s", srvname, dbname, tenant)
-    endp4 <- kusto_query_endpoint(conn_str)
+    conn_str <- sprintf("server=%s;database=%s;tenantid=%s", server, dbname, tenant)
+    endp4 <- kusto_query_endpoint(.connection_string=conn_str)
 
     expect_identical(endp1$token$hash(), endp2$token$hash())
     expect_identical(endp1$token$hash(), endp3$token$hash())
     expect_identical(endp1$token$hash(), endp4$token$hash())
+
+    # no trailing / on server should trigger warning
+    expect_warning(kusto_query_endpoint(
+        server=sprintf("https://%s.%s.kusto.windows.net", srvname, srv$location),
+        database=dbname,
+        .azure_token=endp4$token))
+
+    # invalid property
+    expect_error(kusto_property_endpoint(badproperty="foo"))
 })
 
 
-rg$delete(confirm=FALSE)

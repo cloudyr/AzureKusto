@@ -15,7 +15,9 @@ run_query.kusto_database_endpoint <- function(database, query, ...)
     # token can be a string or an object of class AzureRMR::AzureToken
     token <- if(AzureRMR::is_azure_token(database$token))
         database$token$credentials$access_token
-    else database$token
+    else if(is.character(database$token))
+        database$token
+    else stop("Invalid authentication token in database endpoint", call.=FALSE)
 
     uri <- paste0(server, "/v1/rest/query")
     parse_query_result(call_kusto(token, user, password, uri, database$database, query, ...))
@@ -39,7 +41,9 @@ run_command.kusto_database_endpoint <- function(database, command, ...)
     # token can be a string or an object of class AzureRMR::AzureToken
     token <- if(AzureRMR::is_azure_token(database$token))
         database$token$credentials$access_token
-    else database$token
+    else if(is.character(database$token))
+        database$token
+    else stop("Invalid authentication token in database endpoint", call.=FALSE)
 
     uri <- paste0(server, "/v1/rest/mgmt")
     parse_command_result(call_kusto(token, user, password, uri, database$database, command, ...))

@@ -39,14 +39,15 @@ public=list(
 
     delete_database=function(database, confirm=TRUE)
     {
-        self$get_database_resource(database)$delete(confirm=confirm)
+        self$get_database(database)$delete(confirm=confirm)
     },
 
     list_databases=function()
     {
-        res <- named_list(self$do_operation("databases")$value)
+        res <- AzureRMR::named_list(self$do_operation("databases")$value)
         names(res) <- basename(names(res))
-        lapply(res, function(parms) az_resource$new(self$token, self$subscription, deployed_properties=parms))
+        lapply(res, function(parms)
+            az_kusto_database$new(self$token, self$subscription, deployed_properties=parms))
     },
 
     get_default_tenant=function()
@@ -65,7 +66,7 @@ public=list(
 
     get_aad_token=function(tenant=self$get_default_tenant())
     {
-        get_kusto_token(self$name, normalize_location(self$location), tenant=tenant)
+        get_kusto_token(self$properties$queryUri, tenant=tenant)
     }
 ))
 
