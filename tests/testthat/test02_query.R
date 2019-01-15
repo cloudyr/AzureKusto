@@ -1,27 +1,15 @@
 context("Querying")
 
-tenant <- Sys.getenv("AZ_TEST_TENANT_ID")
-app <- Sys.getenv("AZ_TEST_APP_ID")
-password <- Sys.getenv("AZ_TEST_PASSWORD")
-subscription <- Sys.getenv("AZ_TEST_SUBSCRIPTION")
-
-if(tenant == "" || app == "" || password == "" || subscription == "")
-    skip("Tests skipped: ARM credentials not set")
-
 # use persistent testing server
-rgname <- Sys.getenv("AZ_TEST_KUSTO_SERVER_RG")
+tenant <- Sys.getenv("AZ_TEST_TENANT_ID")
 srvname <- Sys.getenv("AZ_TEST_KUSTO_SERVER")
+srvloc <- Sys.getenv("AZ_TEST_KUSTO_SERVER_LOCATION")
 dbname <- Sys.getenv("AZ_TEST_KUSTO_DATABASE")
-if(rgname == "" || srvname == "" || dbname == "")
+if(tenant == "" || srvname == "" || srvloc == "" || dbname == "")
     skip("Database endpoint tests skipped: server info not set")
 
-db <- AzureRMR::az_rm$
-    new(tenant=tenant, app=app, password=password)$
-    get_subscription(subscription)$
-    get_resource_group(rgname)$
-    get_kusto_cluster(srvname)$
-    get_database(dbname)$
-    get_query_endpoint()
+server <- sprintf("https://%s.%s.kusto.windows.net", srvname, srvloc)
+db <- kusto_query_endpoint(server=server, database=dbname, tenantid=tenant)
 
 test_that("Queries work",
 {
