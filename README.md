@@ -18,7 +18,6 @@ library(AzureKusto)
 
 Samples <- kusto_query_endpoint(server="https://help.kusto.windows.net",
     database="Samples",
-    fed=TRUE,
     .azure_token=get_kusto_token(clustername="help", tenant="microsoft"))
 
 # To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code FPD8GZPY9 to authenticate.
