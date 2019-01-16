@@ -28,11 +28,16 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
         props$token <- find_token(props)
     if(is.null(props$token))
         stop("Only logins with Azure Active Directory are currently supported, unable to acquire token",
-            call.=FALSE)
-
+             call.=FALSE)
     if(props$token$credentials$resource != props$server)
         warning(sprintf("Mismatch between server (%s) and token resource (%s)",
                         props$token$credentials$resource, props$server))
+
+    if(isTRUE(props$fed))
+    {
+        warning("Federated logins not yet supported")
+        props$fed <- NULL
+    }
 
     class(props) <- "kusto_database_endpoint"
     props

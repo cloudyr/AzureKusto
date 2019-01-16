@@ -64,9 +64,9 @@ public=list(
         tenant
     },
 
-    get_aad_token=function(tenant=self$get_default_tenant())
+    get_aad_token=function(tenant=self$get_default_tenant(), ...)
     {
-        get_kusto_token(self$properties$queryUri, tenant=tenant)
+        get_kusto_token(server=self$properties$queryUri, tenant=tenant, ...)
     }
 ))
 

@@ -96,7 +96,7 @@ make_error_message <- function(content)
         sprintf("%s\n%s", err$message, err$`@message`)
     }
     else ""
-    paste0("complete Kusto operation. Message:\n", msg)
+    paste0("complete Kusto operation. Message:\n", sub("\\.$", "", msg))
 }
 
 
