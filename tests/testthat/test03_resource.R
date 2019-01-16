@@ -30,7 +30,8 @@ test_that("Cluster creation works",
     rg <- sub$create_resource_group(rgname, location=srvloc)
     expect_true(sub$resource_group_exists(rgname))
 
-    # this takes 10-15 minutes
+    # this should 10-15 minutes
+    cat("Cluster creation started at ", strftime(Sys.time(), "%Y-%m-%d %H:%M:%S", usetz=TRUE), "\n")
     srv <- rg$create_kusto_cluster(srvname, wait=TRUE)
     expect_true(is_kusto_cluster(srv))
 

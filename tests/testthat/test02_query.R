@@ -13,7 +13,7 @@ srvname <- Sys.getenv("AZ_TEST_KUSTO_SERVER")
 srvloc <- Sys.getenv("AZ_TEST_KUSTO_SERVER_LOCATION")
 dbname <- Sys.getenv("AZ_TEST_KUSTO_DATABASE")
 if(srvname == "" || srvloc == "" || dbname == "")
-    skip("Database endpoint tests skipped: server info not set")
+    skip("Database querying tests skipped: server info not set")
 
 server <- sprintf("https://%s.%s.kusto.windows.net", srvname, srvloc)
 
