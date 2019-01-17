@@ -64,10 +64,6 @@ public=list(
 
     get_query_endpoint=function(tenant=NULL, user=NULL, pwd=NULL)
     {
-        # basicauth not (yet) exposed for customer-created clusters
-        if(!is.null(user) && !is.null(pwd))
-            stop("Basic user authentication not supported")
-
         if(is.null(tenant))
             tenant <- self$cluster$get_default_tenant()
 

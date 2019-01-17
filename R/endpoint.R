@@ -56,6 +56,8 @@ normalize_properties <- function(properties)
         server=c("server", "addr", "address", "network address", "datasource"),
         database=c("database", "initialcatalog"),
         queryconsistency="queryconsistency",
+        response_dynamic_serialization="response_dynamic_serialization",
+        response_dynamic_serialization_2="response_dynamic_serialization_2",
 
         # userauth properties -- DSTS not yet supported
         fed=c("fed", "federated security", "federated", "aadfed"),

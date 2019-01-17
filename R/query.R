@@ -1,3 +1,8 @@
+.qry_opt_names <- c(
+    "queryconsistency",
+    "response_dynamic_serialization",
+    "response_dynamic_serialization_2")
+
 #' @export
 run_query <- function(database, ...)
 {
@@ -12,15 +17,11 @@ run_query.kusto_database_endpoint <- function(database, query, ...)
     user <- database$user
     password <- database$pwd
 
-    # token can be a string or an object of class AzureRMR::AzureToken
-    token <- if(AzureRMR::is_azure_token(database$token))
-        database$token$credentials$access_token
-    else if(is.character(database$token))
-        database$token
-    else stop("Invalid authentication token in database endpoint", call.=FALSE)
+    qry_opts <- database[names(database) %in% .qry_opt_names]
 
     uri <- paste0(server, "/v1/rest/query")
-    parse_query_result(call_kusto(token, user, password, uri, database$database, query, ...))
+    parse_query_result(call_kusto(database$token, user, password, uri, database$database, query,
+                       query_options=qry_opts, ...))
 }
 
 
@@ -38,34 +39,40 @@ run_command.kusto_database_endpoint <- function(database, command, ...)
     user <- database$user
     password <- database$pwd
 
-    # token can be a string or an object of class AzureRMR::AzureToken
-    token <- if(AzureRMR::is_azure_token(database$token))
-        database$token$credentials$access_token
-    else if(is.character(database$token))
-        database$token
-    else stop("Invalid authentication token in database endpoint", call.=FALSE)
+    qry_opts <- database[names(database) %in% .qry_opt_names]
 
     uri <- paste0(server, "/v1/rest/mgmt")
-    parse_command_result(call_kusto(token, user, password, uri, database$database, command, ...))
+    parse_command_result(call_kusto(database$token, user, password, uri, database$database, command,
+                         query_options=qry_opts, ...))
 }
 
 
 call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
+    query_options=list(),
     http_status_handler=c("stop", "warn", "message", "pass"))
 {
+    default_query_options <- list(queryconsistency="weakconsistency")
+    query_options <- utils::modifyList(default_query_options, query_options)
+
+    # token can be a string or an object of class AzureRMR::AzureToken
+    if(AzureRMR::is_azure_token(token))
+    {
+        token <- token$credentials$access_token
+        if(!token$validate()) # refresh if needed
+        {
+            message("Access token has expired or is no longer valid; refreshing")
+            token$refresh()
+        }
+    }
+    else if(!is.character(token))
+        stop("Invalid authentication token in database endpoint", call.=FALSE)
+
     body <- list(
-        properties=list(Options=list(queryconsistency="weakconsistency")),
+        properties=list(Options=query_options),
         csl=qry_cmd
     )
     if(!is.null(db))
         body <- c(body, db=db)
-
-    # if this is an AzureToken object, refresh if necessary
-    if(AzureRMR::is_azure_token(token) && !token$validate())
-    {
-        message("Access token has expired or is no longer valid; refreshing")
-        token$refresh()
-    }
 
     auth_str <- if(!is.null(token))
         paste("Bearer", token)
@@ -74,7 +81,7 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     else stop("Must provide authentication details")
 
     res <- httr::POST(uri, httr::add_headers(Authorization=auth_str), body=body, encode="json")
-    
+
     http_status_handler <- match.arg(http_status_handler)
     if(http_status_handler == "pass")
         return(res)
@@ -82,7 +89,7 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     cont <- httr::content(res, simplifyVector=TRUE)
     handler <- get(paste0(http_status_handler, "_for_status"), getNamespace("httr"))
     handler(res, make_error_message(cont))
-    cont$Tables
+    structure(cont$Tables, class="kusto_result")
 }
 
 
@@ -102,6 +109,10 @@ make_error_message <- function(content)
 
 parse_query_result <- function(tables)
 {
+    # if raw http response, pass through unchanged  
+    if(!inherits(tables, "kusto_result"))
+        return(tables)
+
     # load TOC table
     n <- nrow(tables)
     toc <- convert_types(tables$Rows[[n]], tables$Columns[[n]])
@@ -117,6 +128,10 @@ parse_query_result <- function(tables)
 
 parse_command_result <- function(tables)
 {
+    # if raw http response, pass through unchanged  
+    if(!inherits(tables, "kusto_result"))
+        return(tables)
+
     res <- Map(convert_types, tables$Rows, coltypes_df=tables$Columns)
 
     if(length(res) == 1)
