@@ -57,12 +57,12 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     # token can be a string or an object of class AzureRMR::AzureToken
     if(AzureRMR::is_azure_token(token))
     {
-        token <- token$credentials$access_token
         if(!token$validate()) # refresh if needed
         {
             message("Access token has expired or is no longer valid; refreshing")
             token$refresh()
         }
+        token <- token$credentials$access_token
     }
     else if(!is.character(token))
         stop("Invalid authentication token in database endpoint", call.=FALSE)
