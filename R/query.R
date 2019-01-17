@@ -89,7 +89,7 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     cont <- httr::content(res, simplifyVector=TRUE)
     handler <- get(paste0(http_status_handler, "_for_status"), getNamespace("httr"))
     handler(res, make_error_message(cont))
-    structure(cont$Tables, class="kusto_result")
+    cont$Tables
 }
 
 
@@ -110,7 +110,7 @@ make_error_message <- function(content)
 parse_query_result <- function(tables)
 {
     # if raw http response, pass through unchanged  
-    if(!inherits(tables, "kusto_result"))
+    if(inherits(tables, "response"))
         return(tables)
 
     # load TOC table
@@ -129,7 +129,7 @@ parse_query_result <- function(tables)
 parse_command_result <- function(tables)
 {
     # if raw http response, pass through unchanged  
-    if(!inherits(tables, "kusto_result"))
+    if(inherits(tables, "response"))
         return(tables)
 
     res <- Map(convert_types, tables$Rows, coltypes_df=tables$Columns)
