@@ -1,4 +1,7 @@
+#' The "base case" operation representing the tbl itself and its column variables
 #' @export
+#' @param x A tbl object
+#' @param vars A vector of column variables in the tbl
 op_base <- function(x, vars, class = character())
 {
     stopifnot(is.character(vars))
@@ -22,7 +25,12 @@ op_base_remote <- function(x, vars)
     op_base(x, vars, class = "remote")
 }
 
+# A class representing a single-table verb
 #' @export
+#' @param name the name of the operation verb, e.g. "select", "filter"
+#' @param x the tbl object
+#' @param dots expressions passed to the operation verb function
+#' @param args other arguments passed to the operation verb function
 op_single <- function(name, x, dots = list(), args = list())
 {
     structure(
@@ -36,14 +44,24 @@ op_single <- function(name, x, dots = list(), args = list())
     )
 }
 
+#' Append an operation representing a single-table verb to the tbl_kusto object's ops list
 #' @export
+#' @param name The name of the operation, e.g. 'select', 'filter'
+#' @param .data The tbl_kusto object to append the operation to
+#' @param dots The expressions passed as arguments to the operation verb
+#' @param args Other non-expression arguments passed to the operation verb
 add_op_single <- function(name, .data, dots = list(), args = list())
 {
     .data$ops <- op_single(name, x = .data$ops, dots = dots, args = args)
     .data
 }
 
+#' A double-table verb, e.g. joins, setops
 #' @export
+#' @param name The name of the operation, e.g. 'left_join', 'union_all'
+#' @param x The "left" tbl
+#' @param y The "right" tbl
+#' @param args Other arguments passed to the operation verb
 op_double <- function(name, x, y, args = list())
 {
     structure(
@@ -57,7 +75,14 @@ op_double <- function(name, x, y, args = list())
     )
 }
 
+#' Append a join operation to the tbl_kusto object's ops list
 #' @export
+#' @param type The name of the join type,
+#' one of: inner_join, left_join, right_join, full_join, semi_join, anti_join
+#' @param x The "left" tbl
+#' @param y The "right" tbl
+#' @param by A vector of column names; keys by which tbl x and tbl y will be joined
+#' @param suffix  A vector of strings that will be appended to the names of non-join key columns that exist in both tbl x and tbl y to distinguish them by source tbl.
 add_op_join <- function(type, x, y, by = NULL, suffix = NULL, ...)
 {
     by <- common_by(by, x, y)

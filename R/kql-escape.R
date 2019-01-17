@@ -12,20 +12,6 @@
 #'   commas, identifiers are separated by commas and never wrapped,
 #'   atomic vectors are separated by spaces and wrapped in parens if needed.
 #' @export
-#' @examples
-#' # Doubles vs. integers
-#' escape(1:5)
-#' escape(c(1, 5.4))
-#'
-#' # String vs known kql vs. kql identifier
-#' escape("X")
-#' escape(kql("X"))
-#' escape(ident("X"))
-#'
-#' # Escaping is idempotent
-#' escape("X")
-#' escape(escape("X"))
-#' escape(escape(escape("X")))
 escape <- function(x, parens = NA, collapse = " ")
 {
     UseMethod("escape")

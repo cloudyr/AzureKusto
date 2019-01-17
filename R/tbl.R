@@ -168,6 +168,7 @@ tbl_vars.tbl_kusto_abstract <- function(x)
     op_vars(x$ops)
 }
 
+#' Simulate a kusto database endpoint as the source for a tbl_kusto_abstract.
 #' @export
 simulate_kusto <- function()
 {
@@ -180,17 +181,19 @@ simulate_kusto <- function()
     )
 }
 
+#' Translate a sequence of dplyr operations on a tbl into a Kusto query string.
 #' @export
+#' @param tbl A tbl_kusto or tbl_kusto_abstract instance
 show_query.tbl_kusto_abstract <- function(tbl)
 {
     qry <- kql_build(tbl)
     kql_render(qry)
 }
 
-## #' A tbl object representing a table in a Kusto database.
-## #' @export
-## #' @param subclass name of subclass
-## #' @param ... needed for agreement with generic. Not otherwise used.
+#' A tbl object representing a table in a Kusto database.
+#' @export
+#' @param subclass name of subclass
+#' @param ... needed for agreement with generic. Not otherwise used.
 tbl_kusto <- function(kusto_database, table_name, ...)
 {
     stopifnot(inherits(kusto_database, "kusto_database_endpoint"))
@@ -203,6 +206,8 @@ tbl_kusto <- function(kusto_database, table_name, ...)
 #' Compile the preceding dplyr oprations into a kusto query, execute it on the remote server,
 #' and return the result as a tibble.
 #' @export
+#' @param tbl An instance of class tbl_kusto representing a Kusto table
+#' @param ... needed for agreement with generic. Not otherwise used.
 collect.tbl_kusto <- function(tbl, ...)
 {
     q <- kql_build(tbl)

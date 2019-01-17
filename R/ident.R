@@ -10,7 +10,8 @@ c_character <- function(...)
     x
 }
 
-#' Flag a character string as an identifier
+#' Flag a character string as a Kusto identifier
+#' @params ... character strings to flag as Kusto identifiers
 ident <- function(...)
 {
     x <- c_character(...)

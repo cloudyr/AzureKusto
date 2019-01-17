@@ -1,8 +1,7 @@
 #' Build the tbl object into a data structure representing a Kusto query
 #' @export
 #' @keywords internal
-#' @param op A sequence of operations
-#' @param con (optional) A database connection.
+#' @param op A nested sequence of query operations, i.e. tbl_kusto$ops
 kql_build <- function(op)
 {
     UseMethod("kql_build")
@@ -208,7 +207,8 @@ append_asc <- function(dot)
 }
 
 #' Walks the tree of ops and builds a stack.
-#'
+#' @param op the current operation
+#' @param ops the stack of operations to append to, recursively
 #' @export
 flatten_query <- function(op, ops=list())
 {

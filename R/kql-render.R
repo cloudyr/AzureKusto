@@ -18,7 +18,9 @@ kql_render.kql_query <- function(q)
     q_str
 }
 
+#' Render a set of operations on a tbl_kusto_abstract to a Kusto query
 #' @export
+#' @param query The tbl_kusto instance with a sequence of operations in $ops
 kql_render.tbl_kusto_abstract <- function(query, ...)
 {
     # only used for testing
