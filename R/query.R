@@ -7,7 +7,7 @@
 
 #' Run a query or command against a Kusto database
 #'
-#' @param database A Kusto query endpoint object, as returned by `kusto_query_endpoint`.
+#' @param database A Kusto database endpoint object, as returned by `kusto_query_endpoint`.
 #' @param query,command A string containing the query or command. Note that database management commands in KQL are distinct from queries.
 #' @param ... Other arguments passed to lower-level functions, and ultimately to `httr::POST`.
 #'

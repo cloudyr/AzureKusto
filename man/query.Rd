@@ -16,7 +16,7 @@ run_command(database, ...)
 \method{run_command}{kusto_database_endpoint}(database, command, ...)
 }
 \arguments{
-\item{database}{A Kusto query endpoint object, as returned by \code{kusto_query_endpoint}.}
+\item{database}{A Kusto database endpoint object, as returned by \code{kusto_query_endpoint}.}
 
 \item{...}{Other arguments passed to lower-level functions, and ultimately to \code{httr::POST}.}
 

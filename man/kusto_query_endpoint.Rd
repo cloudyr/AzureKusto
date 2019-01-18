@@ -14,17 +14,20 @@ kusto_query_endpoint(..., .connection_string = NULL,
 
 \item{.azure_token}{Optionally, an Azure Active Directory token to authenticate with. If this is supplied, it overrides other tokens specified in \code{...} or in the connection string.}
 }
+\value{
+An object of class \code{kusto_database_endpoint}.
+}
 \description{
 Endpoint for communicating with a Kusto database
 }
 \details{
-This is a list of properties recognised by \code{kusto_query_endpoint}, and their alternate names.
+This is a list of properties recognised by \code{kusto_query_endpoint}, and their alternate names. Property names not in this list will generate an error.
 
 General properties:
 \itemize{
 \item server: The URI of the server, usually of the form 'https://{clustername}.{location}.kusto.windows.net'.
 \itemize{
-\item addr, address, network_address, datasource
+\item addr, address, network address, datasource
 }
 \item database: The database.
 \itemize{
@@ -38,7 +41,7 @@ General properties:
 \itemize{
 \item applicationclientid
 }
-\item \code{traceclientversion}: The client version for tracing.
+\item traceclientversion: The client version for tracing.
 \item queryconsistency: The level of query consistency. Defaults to "weakconsistency".
 \item response_dynamic_serialization: How to serialize dynamic responses.
 \item response_dynamic_serialization_2: How to serialize dynamic responses.

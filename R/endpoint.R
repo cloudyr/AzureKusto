@@ -5,18 +5,18 @@
 #' @param .azure_token Optionally, an Azure Active Directory token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
 #'
 #' @details
-#' This is a list of properties recognised by `kusto_query_endpoint`, and their alternate names.
+#' This is a list of properties recognised by `kusto_query_endpoint`, and their alternate names. Property names not in this list will generate an error.
 #'
 #' General properties:
 #' - server: The URI of the server, usually of the form 'https://{clustername}.{location}.kusto.windows.net'.
-#'   * addr, address, network_address, datasource
+#'   * addr, address, network address, datasource
 #' - database: The database.
 #'   * initialcatalog
 #' - tenantid: The AAD tenant name or ID to authenticate with.
 #'   * authority
 #' - appclientid: The AAD app/service principal ID
 #'   * applicationclientid
-#' - `traceclientversion`: The client version for tracing.
+#' - traceclientversion: The client version for tracing.
 #' - queryconsistency: The level of query consistency. Defaults to "weakconsistency".
 #' - response_dynamic_serialization: How to serialize dynamic responses.
 #' - response_dynamic_serialization_2: How to serialize dynamic responses.
@@ -53,6 +53,8 @@
 #'    - With the `user` and `pwd` properties if available
 #'    - Otherwise do an interactive authentication and ask for the user credentials using a device code
 #'
+#' @return
+#' An object of class `kusto_database_endpoint`.
 #' @seealso
 #' [run_query], [run_command]
 #' @export
@@ -107,7 +109,7 @@ normalize_properties <- function(properties)
     property_list <- list(
         # general properties
         traceclientversion="traceclientversion",
-        server=c("server", "addr", "address", "network_address", "datasource"),
+        server=c("server", "addr", "address", "network address", "datasource"),
         database=c("database", "initialcatalog"),
         tenantid=c("tenantid", "authority"),
         queryconsistency="queryconsistency",
@@ -115,7 +117,7 @@ normalize_properties <- function(properties)
         response_dynamic_serialization_2="response_dynamic_serialization_2",
 
         # userauth properties -- DSTS not yet supported
-        fed=c("fed", "federated_security", "federated", "aadfed"),
+        fed=c("fed", "federated security", "federated", "aadfed"),
         pwd=c("pwd", "password"),
         user=c("user", "uid", "userid"),
         traceusername="traceusername",
