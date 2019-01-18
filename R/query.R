@@ -1,8 +1,22 @@
 .qry_opt_names <- c(
     "queryconsistency",
     "response_dynamic_serialization",
-    "response_dynamic_serialization_2")
+    "response_dynamic_serialization_2"
+)
 
+
+#' Run a query or command against a Kusto database
+#'
+#' @param database A Kusto query endpoint object, as returned by `kusto_query_endpoint`.
+#' @param query,command A string containing the query or command. Note that database management commands in KQL are distinct from queries.
+#' @param ... Other arguments passed to lower-level functions, and ultimately to `httr::POST`.
+#'
+#' @details
+#' These functions are the workhorses of the AzureKusto package. They communicate with the Kusto server and return the query or command results, as data frames.
+#'
+#' @seealso
+#' [kusto_query_endpoint]
+#' @rdname query
 #' @export
 run_query <- function(database, ...)
 {
@@ -10,6 +24,7 @@ run_query <- function(database, ...)
 }
 
 
+#' @rdname query
 #' @export
 run_query.kusto_database_endpoint <- function(database, query, ...)
 {
@@ -25,6 +40,7 @@ run_query.kusto_database_endpoint <- function(database, query, ...)
 }
 
 
+#' @rdname query
 #' @export
 run_command <- function(database, ...)
 {
@@ -32,6 +48,7 @@ run_command <- function(database, ...)
 }
 
 
+#' @rdname query
 #' @export
 run_command.kusto_database_endpoint <- function(database, command, ...)
 {
@@ -48,24 +65,13 @@ run_command.kusto_database_endpoint <- function(database, command, ...)
 
 
 call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
-    query_options=list(),
-    http_status_handler=c("stop", "warn", "message", "pass"))
+                       query_options=list(),
+                       http_status_handler=c("stop", "warn", "message", "pass"))
 {
     default_query_options <- list(queryconsistency="weakconsistency")
     query_options <- utils::modifyList(default_query_options, query_options)
 
-    # token can be a string or an object of class AzureRMR::AzureToken
-    if(AzureRMR::is_azure_token(token))
-    {
-        if(!token$validate()) # refresh if needed
-        {
-            message("Access token has expired or is no longer valid; refreshing")
-            token$refresh()
-        }
-        token <- token$credentials$access_token
-    }
-    else if(!is.character(token))
-        stop("Invalid authentication token in database endpoint", call.=FALSE)
+    token <- validate_kusto_token(token)
 
     body <- list(
         properties=list(Options=query_options),
@@ -164,3 +170,19 @@ convert_types <- function(df, coltypes_df)
 }
 
 
+validate_kusto_token <- function(token)
+{
+    # token can be a string or an object of class AzureRMR::AzureToken
+    if(AzureRMR::is_azure_token(token))
+    {
+        if(!token$validate()) # refresh if needed
+        {
+            message("Access token has expired or is no longer valid; refreshing")
+            token$refresh()
+        }
+        token <- token$credentials$access_token
+    }
+    else if(!is.character(token))
+        stop("Invalid authentication token in database endpoint", call.=FALSE)
+    token
+}
