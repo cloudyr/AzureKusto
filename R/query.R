@@ -36,7 +36,8 @@ run_query.kusto_database_endpoint <- function(database, query, ...)
 
     uri <- paste0(server, "/v1/rest/query")
     parse_query_result(call_kusto(database$token, user, password, uri, database$database, query,
-                       query_options=qry_opts, ...))
+                                  query_options=qry_opts, ...),
+                       database$use_integer64)
 }
 
 
@@ -60,7 +61,8 @@ run_command.kusto_database_endpoint <- function(database, command, ...)
 
     uri <- paste0(server, "/v1/rest/mgmt")
     parse_command_result(call_kusto(database$token, user, password, uri, database$database, command,
-                         query_options=qry_opts, ...))
+                                    query_options=qry_opts, ...),
+                         database$use_integer64)
 }
 
 
@@ -113,7 +115,7 @@ make_error_message <- function(content)
 }
 
 
-parse_query_result <- function(tables)
+parse_query_result <- function(tables, .use_integer64)
 {
     # if raw http response, pass through unchanged  
     if(inherits(tables, "response"))
@@ -121,10 +123,11 @@ parse_query_result <- function(tables)
 
     # load TOC table
     n <- nrow(tables)
-    toc <- convert_types(tables$Rows[[n]], tables$Columns[[n]])
+    toc <- convert_types(tables$Rows[[n]], tables$Columns[[n]], .use_integer64)
     result_tables <- which(toc$Name == "PrimaryResult")
 
-    res <- Map(convert_types, tables$Rows[result_tables], tables$Columns[result_tables])
+    res <- Map(convert_types, tables$Rows[result_tables], tables$Columns[result_tables],
+               MoreArgs=list(.use_integer64=.use_integer64))
 
     if(length(res) == 1)
         res[[1]]
@@ -132,13 +135,14 @@ parse_query_result <- function(tables)
 }
 
 
-parse_command_result <- function(tables)
+parse_command_result <- function(tables, .use_integer64)
 {
     # if raw http response, pass through unchanged  
     if(inherits(tables, "response"))
         return(tables)
 
-    res <- Map(convert_types, tables$Rows, coltypes_df=tables$Columns)
+    res <- Map(convert_types, tables$Rows, coltypes_df=tables$Columns,
+               MoreArgs=list(.use_integer64=.use_integer64))
 
     if(length(res) == 1)
         res[[1]]
@@ -146,10 +150,10 @@ parse_command_result <- function(tables)
 }
 
 
-convert_kusto_datatype <- function(column, kusto_type)
+convert_kusto_datatype <- function(column, kusto_type, .use_integer64)
 {
     switch(kusto_type,
-        long=, Int64=bit64::as.integer64(column),
+        long=, Int64=if(.use_integer64) bit64::as.integer64(column) else as.numeric(column),
         int=, integer=, Int32=as.integer(column),
         datetime=, DateTime=as.POSIXct(strptime(column, format='%Y-%m-%dT%H:%M:%OSZ', tz='UTC')),
         real=, Double=, Float=as.numeric(column),
@@ -159,13 +163,13 @@ convert_kusto_datatype <- function(column, kusto_type)
 }
 
 
-convert_types <- function(df, coltypes_df)
+convert_types <- function(df, coltypes_df, .use_integer64)
 {
     if(is_empty(df))
         return(list())
     df <- as.data.frame(df, stringsAsFactors=FALSE)
     names(df) <- coltypes_df$ColumnName
-    df[] <- Map(convert_kusto_datatype, df, coltypes_df$DataType)
+    df[] <- Map(convert_kusto_datatype, df, coltypes_df$DataType, MoreArgs=list(.use_integer64=.use_integer64))
     df
 }
 

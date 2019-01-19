@@ -3,6 +3,7 @@
 #' @param ... Named arguments which are the properties for the endpoint object. See 'Details' below for the properties that AzureKusto recognises.
 #' @param .connection_string An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in `...` if they overlap.
 #' @param .azure_token Optionally, an Azure Active Directory token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
+#' @param .use_integer64 Whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
 #'
 #' @details
 #' This is a list of properties recognised by `kusto_query_endpoint`, and their alternate names. Property names not in this list will generate an error.
@@ -58,7 +59,7 @@
 #' @seealso
 #' [run_query], [run_command]
 #' @export
-kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL)
+kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL, .use_integer64=FALSE)
 {
     props <- list(...)
     names(props) <- tolower(names(props))
@@ -98,6 +99,7 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
         props$fed <- NULL
     }
 
+    props$use_integer64 <- .use_integer64
     class(props) <- "kusto_database_endpoint"
     props
 }
