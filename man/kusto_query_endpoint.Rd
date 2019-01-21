@@ -5,7 +5,7 @@
 \title{Endpoint for communicating with a Kusto database}
 \usage{
 kusto_query_endpoint(..., .connection_string = NULL,
-  .azure_token = NULL)
+  .azure_token = NULL, .use_integer64 = FALSE)
 }
 \arguments{
 \item{...}{Named arguments which are the properties for the endpoint object. See 'Details' below for the properties that AzureKusto recognises.}
@@ -13,6 +13,8 @@ kusto_query_endpoint(..., .connection_string = NULL,
 \item{.connection_string}{An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in \code{...} if they overlap.}
 
 \item{.azure_token}{Optionally, an Azure Active Directory token to authenticate with. If this is supplied, it overrides other tokens specified in \code{...} or in the connection string.}
+
+\item{.use_integer64}{Whether to convert columns with Kusto \code{long} datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.}
 }
 \value{
 An object of class \code{kusto_database_endpoint}.
@@ -81,7 +83,7 @@ App authentication properties:
 }
 }
 
-Currently, AzureKusto only supports authentication via Azure Active Directory, and only via app or user credentials. Authenticating with federated logins, an AAD certificate, or with DSTS is planned for a future version.
+Currently, AzureKusto only supports authentication via Azure Active Directory, and only via app or user credentials. Authenticating with federated logins, an AAD certificate, or with DSTS is planned for the future.
 
 The way \code{kusto_query_endpoint} obtains an AAD token is as follows.
 \enumerate{

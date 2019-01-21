@@ -40,7 +40,7 @@
 #' - apptoken: The AAD token for app authentication.
 #'   * apptoken, applicationtoken
 #'
-#' Currently, AzureKusto only supports authentication via Azure Active Directory, and only via app or user credentials. Authenticating with federated logins, an AAD certificate, or with DSTS is planned for a future version.
+#' Currently, AzureKusto only supports authentication via Azure Active Directory, and only via app or user credentials. Authenticating with federated logins, an AAD certificate, or with DSTS is planned for the future.
 #'
 #' The way `kusto_query_endpoint` obtains an AAD token is as follows.
 #' 1. If the `.azure_token` argument is supplied, use it.
@@ -99,7 +99,13 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
         props$fed <- NULL
     }
 
+    if(.use_integer64 && !requireNamespace("bit64"))
+    {
+        warning("bit64 package not installed, cannot use 64-bit integers")
+        .use_integer64 <- FALSE
+    }
     props$use_integer64 <- .use_integer64
+
     class(props) <- "kusto_database_endpoint"
     props
 }
