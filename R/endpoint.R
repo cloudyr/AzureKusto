@@ -95,19 +95,6 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
 
     props$use_integer64 <- .use_integer64
 
-    # if(isTRUE(props$fed))
-    # {
-    #     warning("Federated logins not yet supported")
-    #     props$fed <- NULL
-    # }
-
-    # if(.use_integer64 && !requireNamespace("bit64"))
-    # {
-    #     warning("bit64 package not installed, cannot use 64-bit integers")
-    #     .use_integer64 <- FALSE
-    # }
-    # props$use_integer64 <- .use_integer64
-
     props <- handle_unsupported(props)
 
     class(props) <- "kusto_database_endpoint"
