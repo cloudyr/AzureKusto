@@ -35,18 +35,18 @@ res <- run_query(Samples, "StormEvents | summarize EventCount = count() by State
 as_tibble(res)
 
 ## # A tibble: 67 x 2
-##    State          EventCount     
-##    <chr>          <S3: integer64>
-##  1 ALABAMA        1315           
-##  2 ALASKA         " 257"         
-##  3 AMERICAN SAMOA "  16"         
-##  4 ARIZONA        " 340"         
-##  5 ARKANSAS       1028           
-##  6 ATLANTIC NORTH " 188"         
-##  7 ATLANTIC SOUTH " 193"         
-##  8 CALIFORNIA     " 898"         
-##  9 COLORADO       1654           
-## 10 CONNECTICUT    " 148"         
+##    State          EventCount
+##    <chr>               <dbl>
+##  1 ALABAMA              1315
+##  2 ALASKA                257
+##  3 AMERICAN SAMOA         16
+##  4 ARIZONA               340
+##  5 ARKANSAS             1028
+##  6 ATLANTIC NORTH        188
+##  7 ATLANTIC SOUTH        193
+##  8 CALIFORNIA            898
+##  9 COLORADO             1654
+## 10 CONNECTICUT           148
 ## # ... with 57 more rows
 
 ```
