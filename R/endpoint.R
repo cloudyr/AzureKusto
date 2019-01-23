@@ -93,18 +93,22 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
         warning(sprintf("Mismatch between server (%s) and token resource (%s)",
                         props$token$credentials$resource, props$server))
 
-    if(isTRUE(props$fed))
-    {
-        warning("Federated logins not yet supported")
-        props$fed <- NULL
-    }
-
-    if(.use_integer64 && !requireNamespace("bit64"))
-    {
-        warning("bit64 package not installed, cannot use 64-bit integers")
-        .use_integer64 <- FALSE
-    }
     props$use_integer64 <- .use_integer64
+
+    # if(isTRUE(props$fed))
+    # {
+    #     warning("Federated logins not yet supported")
+    #     props$fed <- NULL
+    # }
+
+    # if(.use_integer64 && !requireNamespace("bit64"))
+    # {
+    #     warning("bit64 package not installed, cannot use 64-bit integers")
+    #     .use_integer64 <- FALSE
+    # }
+    # props$use_integer64 <- .use_integer64
+
+    props <- handle_unsupported(props)
 
     class(props) <- "kusto_database_endpoint"
     props
@@ -213,3 +217,32 @@ find_token <- function(properties)
         app=properties$appclientid, password=token_pwd, username=token_user, auth_type=auth_type))
 }
 
+
+handle_unsupported <- function(props)
+{
+    if(isTRUE(props$fed))
+    {
+        warning("Federated logins not yet supported")
+        props$fed <- NULL
+    }
+
+    if(isTRUE(props$use_integer64) && !requireNamespace("bit64"))
+    {
+        warning("bit64 package not installed, cannot use 64-bit integers")
+        props$use_integer64 <- FALSE
+    }
+
+    if(identical(props$response_dynamic_serialization, "json"))
+    {
+        warning("Serialization of dynamic response to JSON is not yet supported")
+        props$response_dynamic_serialization <- NULL
+    }
+
+    if(identical(props$response_dynamic_serialization_2, "json"))
+    {
+        warning("Serialization of dynamic response to JSON is not yet supported")
+        props$response_dynamic_serialization_2 <- NULL
+    }
+
+    props
+}
