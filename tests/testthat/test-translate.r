@@ -354,3 +354,14 @@ test_that("union_all translates correctly",
     expect_equal(q_str, kql("database('local_df').iris\n| union kind = outer (database('local_df').iris)"))
 
 })
+
+test_that("row_number causes serialize to be inserted in the Kusto query",
+{
+    
+    q <- tbl_iris %>%
+        mutate(rn = row_number())
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').iris\n| serialize\n| extend rn = row_number()"))
+})

@@ -85,6 +85,7 @@ kql_build.op_mutate <- function(op, ...)
     all_vars <- build_kql(escape(ident(op$vars), collapse = ", "))
     existing_vars <- build_kql(escape(ident(setdiff(op$vars, names(assigned_exprs))), collapse = ", "))
 
+    # if the mutate contains a call to an aggregation function, emit a summarize clause.
     if (any(calls_agg))
     {
         has_agg <- TRUE
@@ -107,6 +108,12 @@ kql_build.op_mutate <- function(op, ...)
         has_agg <- FALSE
         verb <- "extend "
         by <- ""
+    }
+
+    # If the mutate contains a call to row_number, Kusto requires the rowset to be serialized.
+    # prepend a call to `serialize`.
+    if ("row_number" %in% calls){
+        verb <- paste0("serialize\n| ", verb)
     }
 
     stmts <- mapply(translate_kql, assigned_exprs)
