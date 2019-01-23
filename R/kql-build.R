@@ -1,7 +1,6 @@
 #' Build the tbl object into a data structure representing a Kusto query
-#' @export
-#' @keywords internal
 #' @param op A nested sequence of query operations, i.e. tbl_kusto$ops
+#' @export
 kql_build <- function(op)
 {
     UseMethod("kql_build")
@@ -74,6 +73,8 @@ kql_build.op_rename <- function(op, ...)
 #' then it must emit a summarize clause grouped by all variables.
 #' If the mutate contains an aggregation and the tbl is grouped,
 #' then it must join to a subquery containing the summarize clause.
+#' @param op A nested sequence of query operations, i.e. tbl_kusto$ops
+#' @param ... Needed for agreement with generic. Not otherwise used.
 #' @export
 kql_build.op_mutate <- function(op, ...)
 {

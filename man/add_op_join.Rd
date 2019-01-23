@@ -4,7 +4,7 @@
 \alias{add_op_join}
 \title{Append a join operation to the tbl_kusto object's ops list}
 \usage{
-add_op_join(type, x, y, by = NULL, suffix = NULL, ...)
+add_op_join(type, x, y, by = NULL, suffix = NULL)
 }
 \arguments{
 \item{type}{The name of the join type,

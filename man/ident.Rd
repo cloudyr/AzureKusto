@@ -6,6 +6,9 @@
 \usage{
 ident(...)
 }
+\arguments{
+\item{...}{character strings to flag as Kusto identifiers}
+}
 \description{
 Flag a character string as a Kusto identifier
 }

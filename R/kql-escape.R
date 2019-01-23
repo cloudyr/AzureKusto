@@ -129,7 +129,6 @@ kql_vector <- function(x, parens = NA, collapse = " ")
 }
 
 #' Build a KQL string.
-#'
 #' @param ... input to convert to KQL. Use [kql()] to preserve
 #'   user input as is (dangerous), and [ident()] to label user
 #'   input as kql identifiers (safe)
@@ -178,18 +177,25 @@ kql_quote <- function(x, quote)
     y
 }
 
+#' Escape a Kusto string by single-quoting
+#' @param x A string to escape
 #' @export
 kql_escape_string <- function(x)
 {
     kql_quote(x, "'")
 }
 
+#' Escape a Kusto identifer (pass-through, as identifiers don't need quoting)
+#' @param x An identifier to escape
 #' @export
 kql_escape_ident <- function(x)
 {
     x
 }
 
+#' Escape a Kusto logical value.
+#' Converts TRUE/FALSE to true / false
+#' @param x A logical value to escape
 #' @export
 kql_escape_logical <- function(x)
 {

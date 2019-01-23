@@ -25,7 +25,7 @@ op_base_remote <- function(x, vars)
     op_base(x, vars, class = "remote")
 }
 
-# A class representing a single-table verb
+#' A class representing a single-table verb
 #' @export
 #' @param name the name of the operation verb, e.g. "select", "filter"
 #' @param x the tbl object
@@ -83,7 +83,7 @@ op_double <- function(name, x, y, args = list())
 #' @param y The "right" tbl
 #' @param by A vector of column names; keys by which tbl x and tbl y will be joined
 #' @param suffix  A vector of strings that will be appended to the names of non-join key columns that exist in both tbl x and tbl y to distinguish them by source tbl.
-add_op_join <- function(type, x, y, by = NULL, suffix = NULL, ...)
+add_op_join <- function(type, x, y, by = NULL, suffix = NULL)
 {
     by <- common_by(by, x, y)
     vars <- join_vars(op_vars(x), op_vars(y), type = type, by = by, suffix = suffix)
@@ -97,7 +97,7 @@ add_op_join <- function(type, x, y, by = NULL, suffix = NULL, ...)
     x
 }
 
-add_op_set_op <- function(x, y, type, ...)
+add_op_set_op <- function(x, y, type)
 {
     x$ops <- op_double("set_op", x, y, args = list(type = type))
     x
@@ -149,6 +149,9 @@ add_suffixes <- function(x, y, suffix)
     out
 }
 
+#' Look up the applicable grouping variables for an operation
+#' based on the data source and preceding sequence of operations
+#' @param op An operation instance
 #' @export
 op_grps <- function(op) UseMethod("op_grps")
 
@@ -205,6 +208,9 @@ op_grps.tbl_df <- function(op)
     character()
 }
 
+#' Look up the applicable variables in scope for a given operation
+#' based on the data source and preceding sequence of operations
+#' @param op An operation instance
 #' @export
 op_vars <- function(op) UseMethod("op_vars")
 

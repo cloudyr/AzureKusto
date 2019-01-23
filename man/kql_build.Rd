@@ -12,4 +12,3 @@ kql_build(op)
 \description{
 Build the tbl object into a data structure representing a Kusto query
 }
-\keyword{internal}
