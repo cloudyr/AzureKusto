@@ -97,6 +97,11 @@ add_op_join <- function(type, x, y, by = NULL, suffix = NULL)
     x
 }
 
+#' Append a set operation to the tbl_kusto object's ops list
+#' @export
+#' @param x The "left" tbl
+#' @param y The "right" tbl
+#' @param type The type of set operation to perform, currently only supports union_all
 add_op_set_op <- function(x, y, type)
 {
     x$ops <- op_double("set_op", x, y, args = list(type = type))

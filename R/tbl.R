@@ -163,6 +163,7 @@ intersect.tbl_kusto_abstract <- function(x, y, ...)
     stop("Kusto does not support intersect() at this time.")
 }
 
+#' @export
 tbl_vars.tbl_kusto_abstract <- function(x)
 {
     op_vars(x$ops)

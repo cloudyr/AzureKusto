@@ -21,6 +21,7 @@ kql_render.kql_query <- function(query)
     q_str
 }
 
+#' @export
 kql_render.tbl_kusto_abstract <- function(query, ...)
 {
     qry <- kql_build(query$ops, ...)
