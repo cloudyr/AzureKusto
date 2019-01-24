@@ -8,7 +8,7 @@
 #' library(dplyr)
 #' df <- data.frame(x = 1, y = 2)
 #'
-#' df <- tbl_kusto_abstract(df, src = simulate_kusto())
+#' df <- tbl_kusto_abstract(df, "table1", src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
 tbl_kusto_abstract <- function(df, table_name, src = NULL) {
   src$table <- table_name
@@ -193,7 +193,8 @@ show_query.tbl_kusto_abstract <- function(tbl)
 
 #' A tbl object representing a table in a Kusto database.
 #' @export
-#' @param subclass name of subclass
+#' @param kusto_database An instance of kusto_database_endpoint that this table should be queried from
+#' @param table_name The name of the table in the Kusto database
 #' @param ... needed for agreement with generic. Not otherwise used.
 tbl_kusto <- function(kusto_database, table_name, ...)
 {

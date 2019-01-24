@@ -2,6 +2,7 @@
 #' @export
 #' @param x A tbl object
 #' @param vars A vector of column variables in the tbl
+#' @param class The class that op_base should inherit from, default is character()
 op_base <- function(x, vars, class = character())
 {
     stopifnot(is.character(vars))
