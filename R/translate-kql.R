@@ -377,7 +377,7 @@ kql <- function(...)
 }
 
 #' @export
-print.kql <- function(x)
+print.kql <- function(x, ...)
 {
     cat("<KQL> ", x, "\n", sep = "")
 }

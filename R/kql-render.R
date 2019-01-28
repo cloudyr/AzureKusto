@@ -8,7 +8,7 @@ kql_render <- function(query, ...)
 }
 
 #' @export
-kql_render.kql_query <- function(query)
+kql_render.kql_query <- function(query, ...)
 {
     tblname <- sprintf("database('%s').%s", query$src$database, escape(ident(query$src$table)))
     q_str <- paste(unlist(query$ops[-1]), collapse = "\n| ")

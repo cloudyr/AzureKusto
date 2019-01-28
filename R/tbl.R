@@ -92,9 +92,9 @@ summarise.tbl_kusto_abstract <- function(.data, ...)
 }
 
 #' @export
-head.tbl_kusto_abstract <- function(.data, n = 6L, ...)
+head.tbl_kusto_abstract <- function(x, n = 6L, ...)
 {
-    add_op_single("head", .data, args = list(n = n))
+    add_op_single("head", x, args = list(n = n))
 }
 
 #' @export
