@@ -96,7 +96,6 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
     props$use_integer64 <- .use_integer64
 
     props <- handle_unsupported(props)
-
     class(props) <- "kusto_database_endpoint"
     props
 }
@@ -222,14 +221,15 @@ handle_unsupported <- function(props)
     if(identical(props$response_dynamic_serialization, "json"))
     {
         warning("Serialization of dynamic response to JSON is not yet supported")
-        props$response_dynamic_serialization <- NULL
     }
 
     if(identical(props$response_dynamic_serialization_2, "json"))
     {
         warning("Serialization of dynamic response to JSON is not yet supported")
-        props$response_dynamic_serialization_2 <- NULL
     }
+
+    props$response_dynamic_serialization <- "string"
+    props$response_dynamic_serialization_2 <- "string"
 
     props
 }

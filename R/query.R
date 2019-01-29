@@ -26,18 +26,21 @@ run_query <- function(database, ...)
 
 #' @rdname query
 #' @export
-run_query.kusto_database_endpoint <- function(database, query, ...)
+run_query.kusto_database_endpoint <- function(database, query, query_params=list(), ...)
 {
     server <- database$server
+    db <- database$database
+    token <- database$token
     user <- database$user
     password <- database$pwd
 
     qry_opts <- database[names(database) %in% .qry_opt_names]
 
     uri <- paste0(server, "/v1/rest/query")
-    parse_query_result(call_kusto(database$token, user, password, uri, database$database, query,
-                                  query_options=qry_opts, ...),
-                       database$use_integer64)
+    body <- build_request_body(db, query, query_options=qry_opts, query_parameters=query_params)
+    auth_str <- build_auth_str(token, user, password)
+    result <- call_kusto(uri, body, auth_str)
+    parse_query_result(result, database$use_integer64)
 }
 
 
@@ -54,26 +57,49 @@ run_command <- function(database, ...)
 run_command.kusto_database_endpoint <- function(database, command, ...)
 {
     server <- database$server
+    db <- database$database
+    token <- database$token
     user <- database$user
     password <- database$pwd
 
     qry_opts <- database[names(database) %in% .qry_opt_names]
 
     uri <- paste0(server, "/v1/rest/mgmt")
-    parse_command_result(call_kusto(database$token, user, password, uri, database$database, command,
-                                    query_options=qry_opts, ...),
-                         database$use_integer64)
+    body <- build_request_body(db, command, query_options=qry_opts)
+    auth_str <- build_auth_str(token, user, password)
+    result <- call_kusto(uri, body, auth_str)
+    parse_command_result(result, database$use_integer64)
 }
 
 
-call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
-                       query_options=list(),
-                       http_status_handler=c("stop", "warn", "message", "pass"))
+
+get_param_types <- function(...)
+{
+    query_params <- list(...)
+    ps <- list()
+    for (p in names(query_params))
+    {
+        param_class <- class(query_params[[p]])
+        kusto_type <- switch(param_class,
+               "logical"="bool",
+               "numeric"="real",
+               "integer64"="long",
+               "integer"="int",
+               "Date"="datetime",
+               "POSIXct"="datetime",
+               "string"
+               )
+        ps <- c(ps, paste0(p,":",kusto_type))
+    }
+    ps_str <- paste(ps, collapse=", ")
+    ps_str <- paste0("declare query_parameters (", ps_str, "); ")
+    return(ps_str)
+}
+
+build_request_body <- function(db, qry_cmd, query_options=list(), query_parameters=list())
 {
     default_query_options <- list(queryconsistency="weakconsistency")
     query_options <- utils::modifyList(default_query_options, query_options)
-
-    token <- validate_kusto_token(token)
 
     body <- list(
         properties=list(Options=query_options),
@@ -82,12 +108,33 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     if(!is.null(db))
         body <- c(body, db=db)
 
+    if(length(query_parameters))
+    {
+        body$csl <- paste0(do.call(get_param_types, query_parameters), body$csl)
+        body$properties$Parameters <- query_parameters   
+    }
+
+    body
+}
+
+build_auth_str <- function(token=NULL, user=NULL, password=NULL)
+{
+    token <- validate_kusto_token(token)
+
     auth_str <- if(!is.null(token))
         paste("Bearer", token)
     else if(!is.null(user) && !is.null(password))
         paste("Basic", openssl::base64_encode(paste(user, password, sep=":")))
     else stop("Must provide authentication details")
 
+    auth_str
+}
+
+call_kusto <- function(uri,
+                       body,
+                       auth_str,
+                       http_status_handler=c("stop", "warn", "message", "pass"))
+{
     res <- httr::POST(uri, httr::add_headers(Authorization=auth_str), body=body, encode="json")
 
     http_status_handler <- match.arg(http_status_handler)
@@ -99,7 +146,6 @@ call_kusto <- function(token=NULL, user=NULL, password=NULL, uri, db, qry_cmd,
     handler(res, make_error_message(cont))
     cont$Tables
 }
-
 
 make_error_message <- function(content)
 {

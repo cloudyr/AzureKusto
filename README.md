@@ -32,22 +32,34 @@ Now you can issue queries to the Kusto database with `run_query` and get the res
 
 res <- run_query(Samples, "StormEvents | summarize EventCount = count() by State | order by State asc")
 
-as_tibble(res)
+head(res)
 
-## # A tibble: 67 x 2
-##    State          EventCount
-##    <chr>               <dbl>
-##  1 ALABAMA              1315
-##  2 ALASKA                257
-##  3 AMERICAN SAMOA         16
-##  4 ARIZONA               340
-##  5 ARKANSAS             1028
-##  6 ATLANTIC NORTH        188
-##  7 ATLANTIC SOUTH        193
-##  8 CALIFORNIA            898
-##  9 COLORADO             1654
-## 10 CONNECTICUT           148
-## # ... with 57 more rows
+##            State EventCount
+## 1        ALABAMA       1315
+## 2         ALASKA        257
+## 3 AMERICAN SAMOA         16
+## 4        ARIZONA        340
+## 5       ARKANSAS       1028
+## 6 ATLANTIC NORTH        188
+
+```
+
+`run_query()` also supports query parameters. Simply pass a list containing your parameters and they will be interpolated into the query string with proper escaping.
+
+```r
+
+params <- list(lim=10L)
+
+res <- run_query(Samples, "MyFunction(lim)", query_params=params)
+
+```
+
+Command statements can be run with `run_command()`.
+Note that commands do not accept parameters.
+
+```r
+
+res <- run_command(Samples, ".show tables | count")
 
 ```
 
