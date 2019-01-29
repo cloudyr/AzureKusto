@@ -26,8 +26,9 @@ run_query <- function(database, ...)
 
 #' @rdname query
 #' @export
-run_query.kusto_database_endpoint <- function(database, query, query_params=list(), ...)
+run_query.kusto_database_endpoint <- function(database, query, ...)
 {
+    query_params <- list(...)
     server <- database$server
     db <- database$database
     token <- database$token
