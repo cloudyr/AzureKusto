@@ -218,18 +218,19 @@ handle_unsupported <- function(props)
         props$use_integer64 <- FALSE
     }
 
-    if(identical(props$response_dynamic_serialization, "json"))
+    if(!is_empty(props$response_dynamic_serialization) &&
+       tolower(props$response_dynamic_serialization) != "string")
     {
         warning("Serialization of dynamic response to JSON is not yet supported")
+        props$response_dynamic_serialization <- NULL
     }
 
-    if(identical(props$response_dynamic_serialization_2, "json"))
+    if(!is_empty(props$response_dynamic_serialization_2) &&
+       tolower(props$response_dynamic_serialization_2) != "string")
     {
         warning("Serialization of dynamic response to JSON is not yet supported")
+        props$response_dynamic_serialization_2 <- NULL
     }
-
-    props$response_dynamic_serialization <- "string"
-    props$response_dynamic_serialization_2 <- "string"
 
     props
 }
