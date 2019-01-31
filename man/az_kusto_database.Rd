@@ -20,6 +20,7 @@ The following methods are available, in addition to those provided by the \link[
 \item \code{remove_principals(...)}: Remove database principals.
 \item \code{list_principals()}: Retrieve all database principals, as a data frame.
 \item \code{get_query_endpoint()}: Get a query endpoint object for interacting with the database.
+\item \code{get_ingestion_endpoint()}: Get an ingestion endpoint object for interacting with the database.
 }
 }
 
@@ -59,8 +60,9 @@ db$list_principals()
 # add a new principal
 db$add_principal("New User", role="User", fqn="aaduser=username@mydomain")
 
-# get a query endpoint
-db$get_query_endpoint()
+# get the endpoints
+db$get_query_endpoint(use_integer64=FALSE)
+db$get_ingestion_endpoint()
 
 }
 }

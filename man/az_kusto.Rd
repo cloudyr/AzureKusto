@@ -27,7 +27,8 @@ The following methods are available, in addition to those provided by the \link[
 \item \code{delete_database(database, confirm=TRUE)}: Delete a database, by default asking for confirmation first.
 \item \code{list_databases()}: List all databases in this cluster.
 \item \code{get_default_tenant()}: Retrieve the default tenant to authenticate with this cluster.
-\item \code{get_aad_token(tenant, ...)}: Obtain an authentication token from Azure Active Directory. Accepts further arguments that will be passed to \link{get_kusto_token}.
+\item \code{get_query_token(tenant, ...)}: Obtain an authentication token from Azure Active Directory for this cluster's query enpdoint. Accepts further arguments that will be passed to \link{get_kusto_token}.
+\item \code{get_ingestion_token(tenant, ...)}: Obtain an authentication token for this cluster's ingestion endpoint. Accepts further arguments that will be passed to \link{get_kusto_token}.
 }
 }
 

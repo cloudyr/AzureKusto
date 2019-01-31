@@ -1,12 +1,12 @@
-#' Endpoint for communicating with a Kusto database
+#' Endpoints for communicating with a Kusto database
 #'
 #' @param ... Named arguments which are the properties for the endpoint object. See 'Details' below for the properties that AzureKusto recognises.
 #' @param .connection_string An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in `...` if they overlap.
 #' @param .azure_token Optionally, an Azure Active Directory token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
-#' @param .use_integer64 Whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
+#' @param .use_integer64 For `kusto_query_endpoint`, whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
 #'
 #' @details
-#' This is a list of properties recognised by `kusto_query_endpoint`, and their alternate names. Property names not in this list will generate an error.
+#' This is a list of properties recognised by `kusto_query_endpoint` and `kusto_ingestion_endpoint`, and their alternate names. Property names not in this list will generate an error. Note that not all properties that are recognised are currently supported by AzureKusto.
 #'
 #' General properties:
 #' - server: The URI of the server, usually of the form 'https://{clustername}.{location}.kusto.windows.net'.
@@ -58,10 +58,29 @@
 #' An object of class `kusto_database_endpoint`.
 #' @seealso
 #' [run_query], [run_command]
+#' @rdname database_endpoint
 #' @export
 kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL, .use_integer64=FALSE)
 {
-    props <- list(...)
+    endp <- kusto_database_endpoint(list(...), .connection_string, .azure_token)
+    endp$use_integer64 <- .use_integer64
+    class(endp) <- c("kusto_query_endpoint", class(endp))
+    endp
+}
+
+
+#' @rdname database_endpoint
+#' @export
+kusto_ingestion_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL)
+{
+    endp <- kusto_database_endpoint(list(...), .connection_string, .azure_token)
+    class(endp) <- c("kusto_ingestion_endpoint", class(endp))
+    endp
+}
+
+
+kusto_database_endpoint <- function(props, .connection_string, .azure_token)
+{
     names(props) <- tolower(names(props))
 
     if(!is.null(.connection_string))
@@ -93,13 +112,10 @@ kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL
         warning(sprintf("Mismatch between server (%s) and token resource (%s)",
                         props$token$credentials$resource, props$server))
 
-    props$use_integer64 <- .use_integer64
-
     props <- handle_unsupported(props)
     class(props) <- "kusto_database_endpoint"
     props
 }
-
 
 normalize_properties <- function(properties)
 {

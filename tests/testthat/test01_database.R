@@ -21,14 +21,17 @@ rg <- AzureRMR::az_rm$
     get_resource_group(rgname)
 
 
-# should only get one devicecode prompt here at most
+# should only get 2 devicecode prompts here at most
 test_that("Resource access functions work",
 {
     srv <- rg$get_kusto_cluster(srvname)
     expect_true(is_kusto_cluster(srv))
 
-    expect_true(AzureRMR::is_azure_token(srv$get_aad_token()))
-    expect_true(AzureRMR::is_azure_token(srv$get_aad_token(app=app, password=password)))
+    expect_true(AzureRMR::is_azure_token(srv$get_query_token()))
+    expect_true(AzureRMR::is_azure_token(srv$get_query_token(app=app, password=password)))
+
+    expect_true(AzureRMR::is_azure_token(srv$get_ingestion_token()))
+    expect_true(AzureRMR::is_azure_token(srv$get_ingestion_token(app=app, password=password)))
 
     db <- srv$get_database(dbname)
     expect_true(is_kusto_database(db))

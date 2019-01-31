@@ -10,6 +10,7 @@
 #' - `remove_principals(...)`: Remove database principals.
 #' - `list_principals()`: Retrieve all database principals, as a data frame.
 #' - `get_query_endpoint()`: Get a query endpoint object for interacting with the database.
+#' - `get_ingestion_endpoint()`: Get an ingestion endpoint object for interacting with the database.
 #'
 #' @section Initialization:
 #' Initializing a new object of this class can either retrieve an existing Kusto database, or create a new database on the server. Generally, the best way to initialize an object is via the `get_database`, `list_databases()` and `create_database` methods of the [az_kusto] class, which handle the details automatically.
@@ -47,8 +48,9 @@
 #' # add a new principal
 #' db$add_principal("New User", role="User", fqn="aaduser=username@mydomain")
 #'
-#' # get a query endpoint
-#' db$get_query_endpoint()
+#' # get the endpoints
+#' db$get_query_endpoint(use_integer64=FALSE)
+#' db$get_ingestion_endpoint()
 #'
 #' }
 #' @seealso
@@ -117,15 +119,27 @@ public=list(
         do.call(rbind, lapply(val, as.data.frame, stringsAsFactors=FALSE))
     },
 
-    get_query_endpoint=function(tenant=NULL, user=NULL, pwd=NULL)
+    get_query_endpoint=function(tenant=NULL, user=NULL, pwd=NULL, use_integer64=FALSE)
     {
         if(is.null(tenant))
             tenant <- self$cluster$get_default_tenant()
 
-        token <- self$cluster$get_aad_token(tenant)
+        token <- self$cluster$get_query_token(tenant)
         server <- self$cluster$properties$queryUri
         database <- basename(self$name)
-        kusto_query_endpoint(server=server, database=database, tenantid=tenant, .azure_token=token)
+        kusto_query_endpoint(server=server, database=database, tenantid=tenant, .azure_token=token,
+            .use_integer64=use_integer64)
+    },
+
+    get_ingestion_endpoint=function(tenant=NULL, user=NULL, pwd=NULL)
+    {
+        if(is.null(tenant))
+            tenant <- self$cluster$get_default_tenant()
+
+        token <- self$cluster$get_ingestion_token(tenant)
+        server <- self$cluster$properties$dataIngestionUri
+        database <- basename(self$name)
+        kusto_ingestion_endpoint(server=server, database=database, tenantid=tenant, .azure_token=token)
     }
 ))
 

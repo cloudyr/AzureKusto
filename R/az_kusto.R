@@ -13,7 +13,8 @@
 #' - `delete_database(database, confirm=TRUE)`: Delete a database, by default asking for confirmation first.
 #' - `list_databases()`: List all databases in this cluster.
 #' - `get_default_tenant()`: Retrieve the default tenant to authenticate with this cluster.
-#' - `get_aad_token(tenant, ...)`: Obtain an authentication token from Azure Active Directory. Accepts further arguments that will be passed to [get_kusto_token].
+#' - `get_query_token(tenant, ...)`: Obtain an authentication token from Azure Active Directory for this cluster's query enpdoint. Accepts further arguments that will be passed to [get_kusto_token].
+#' - `get_ingestion_token(tenant, ...)`: Obtain an authentication token for this cluster's ingestion endpoint. Accepts further arguments that will be passed to [get_kusto_token].
 #'
 #' @section Initialization:
 #' Initializing a new object of this class can either retrieve an existing Kusto cluster, or create a new cluster on the host. Generally, the best way to initialize an object is via the `get_kusto_cluster` and `create_kusto_cluster` methods of the [az_resource_group] class, which handle the details automatically.
@@ -121,9 +122,14 @@ public=list(
         tenant
     },
 
-    get_aad_token=function(tenant=self$get_default_tenant(), ...)
+    get_query_token=function(tenant=self$get_default_tenant(), ...)
     {
         get_kusto_token(server=self$properties$queryUri, tenant=tenant, ...)
+    },
+
+    get_ingestion_token=function(tenant=self$get_default_tenant(), ...)
+    {
+        get_kusto_token(server=self$properties$dataIngestionUri, tenant=tenant, ...)
     }
 ))
 
