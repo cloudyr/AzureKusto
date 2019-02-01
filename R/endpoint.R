@@ -81,30 +81,22 @@ kusto_database_endpoint <- function(..., .connection_string=NULL,
     }
 
     # fix all property names to a given (sub)set, remove quotes from quoted values
-    props <- normalize_properties(props)
+    props <- normalize_connstring_properties(props)
 
-    if(!is.null(.query_token))
-        props$token <- .query_token
-
-    # if .query_token arg not supplied, get it from other properties
-    if(is.null(props$token))
-        props$token <- find_token(props)
-    if(is.null(props$token))
-        stop("Only logins with Azure Active Directory are currently supported, unable to acquire token",
-             call.=FALSE)
-    if(props$token$credentials$resource != props$server)
+    props$token <- find_endpoint_token(props, .query_token)
+    if(is_azure_token(props$token) && props$token$credentials$resource != props$server)
         warning(sprintf("Mismatch between server (%s) and token resource (%s)",
                         props$token$credentials$resource, props$server))
 
-    props <- handle_unsupported(props)
-
     props$use_integer64 <- .use_integer64
+    props <- check_endpoint_properties(props)
 
     class(props) <- "kusto_database_endpoint"
     props
 }
 
-normalize_properties <- function(properties)
+
+normalize_connstring_properties <- function(properties)
 {
     # valid property names for a Kusto connection string
     property_list <- list(
@@ -166,8 +158,11 @@ find_type_from_connstring <- function(string)
 }
 
 
-find_token <- function(properties)
+find_endpoint_token <- function(properties, .query_token)
 {
+    if(!is.null(.query_token))
+        return(.query_token)
+
     # properties to check for token: usertoken, apptoken, appclientid, appkey
     if(!is_empty(properties$usertoken))
         return(properties$usertoken)
@@ -207,7 +202,7 @@ find_token <- function(properties)
 }
 
 
-handle_unsupported <- function(props)
+check_endpoint_properties <- function(props)
 {
     if(isTRUE(props$fed))
     {

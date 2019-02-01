@@ -121,7 +121,7 @@ build_request_body <- function(db, qry_cmd, query_options=list(), query_paramete
 
 build_auth_str <- function(token=NULL, user=NULL, password=NULL)
 {
-    token <- validate_kusto_token(token)
+    token <- validate_token(token)
 
     auth_str <- if(!is.null(token))
         paste("Bearer", token)
@@ -198,28 +198,28 @@ parse_command_result <- function(tables, .use_integer64)
 }
 
 
-convert_kusto_datatype <- function(column, kusto_type, .use_integer64)
-{
-    switch(kusto_type,
-        long=, Int64=
-            if(.use_integer64) bit64::as.integer64(column) else as.numeric(column),
-        int=, integer=, Int32=
-            as.integer(column),
-        datetime=, DateTime=
-            as.POSIXct(strptime(column, format='%Y-%m-%dT%H:%M:%OSZ', tz='UTC')),
-        real=, Double=, Float=
-            as.numeric(column),
-        bool=, Boolean=
-            as.logical(column),
-        as.character(column)
-    )
-}
-
-
 convert_result_types <- function(df, coltypes_df, .use_integer64)
 {
     if(is_empty(df))
         return(list())
+
+    convert_kusto_datatype <- function(column, kusto_type, .use_integer64)
+    {
+        switch(kusto_type,
+            long=, Int64=
+                if(.use_integer64) bit64::as.integer64(column) else as.numeric(column),
+            int=, integer=, Int32=
+                as.integer(column),
+            datetime=, DateTime=
+                as.POSIXct(strptime(column, format='%Y-%m-%dT%H:%M:%OSZ', tz='UTC')),
+            real=, Double=, Float=
+                as.numeric(column),
+            bool=, Boolean=
+                as.logical(column),
+            as.character(column)
+        )
+    }
+
     df <- as.data.frame(df, stringsAsFactors=FALSE)
     names(df) <- coltypes_df$ColumnName
     df[] <- Map(convert_kusto_datatype, df, coltypes_df$DataType, MoreArgs=list(.use_integer64=.use_integer64))
@@ -227,7 +227,7 @@ convert_result_types <- function(df, coltypes_df, .use_integer64)
 }
 
 
-validate_kusto_token <- function(token)
+validate_token <- function(token)
 {
     # token can be a string or an object of class AzureRMR::AzureToken
     if(AzureRMR::is_azure_token(token))
@@ -240,6 +240,6 @@ validate_kusto_token <- function(token)
         token <- token$credentials$access_token
     }
     else if(!is.character(token))
-        stop("Invalid authentication token in database endpoint", call.=FALSE)
+        stop("Invalid authentication token", call.=FALSE)
     token
 }
