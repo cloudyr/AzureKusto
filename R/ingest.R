@@ -24,7 +24,7 @@ ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
         dest_table,
         "(", obfuscate_string(src), ")",
         prop_list)
-    return(cmd)
+
     call_kusto(database, cmd, ...)
 }
 
