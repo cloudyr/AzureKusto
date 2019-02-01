@@ -18,7 +18,7 @@ ingest_from_file <- function(database, src, dest_table, streaming_ingest=FALSE, 
         if(!requireNamespace("AzureStor"))
             stop("AzureStor package not available")
 
-        return(ingest_from_blob(database, stor, cont, file, dest_table=dest_table, key=key...))
+        stop("not yet implemented")
     }
     stop("not yet implemented")
 }
