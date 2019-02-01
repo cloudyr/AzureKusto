@@ -22,14 +22,14 @@
 #' - `name`: The name of the principal to create.
 #' - `role`: The roleo of the principal, for example "Admin" or "User".
 #' - `type`: The type of principal, either "User" or "App".
-#' - `fqn`: The fully qualified name of the principal, for example "aaduser=username@mydomain". If supplied, the other details will be obtained from this.
+#' - `fqn`: The fully qualified name of the principal, for example "aaduser=username@mydomain" for an Azure Active Directory account. If supplied, the other details will be obtained from this.
 #' - `email`: For a user principal, the email address.
 #' - `app_id`: For an application principal, the ID.
 #'
 #' `remove_principal` removes a principal. It takes the same arguments as `add_principal`; if the supplied details do not match the actual details for the principal, it is not removed.
 #'
 #' @seealso
-#' [az_kusto], [kusto_query_endpoint],
+#' [az_kusto], [kusto_database_endpoint],
 #' [create_database], [get_database], [delete_database]
 #'
 #' [Kusto/Azure Data Explorer documentation](https://docs.microsoft.com/en-us/azure/data-explorer/),
@@ -48,13 +48,10 @@
 #' # add a new principal
 #' db$add_principal("New User", role="User", fqn="aaduser=username@mydomain")
 #'
-#' # get the endpoints
-#' db$get_query_endpoint(use_integer64=FALSE)
-#' db$get_ingestion_endpoint()
+#' # get the endpoint
+#' db$get_database_endpoint(use_integer64=FALSE)
 #'
 #' }
-#' @seealso
-#' [az_kusto], [create_database], [get_database], [delete_database], [list_databases], [kusto_query_endpoint]
 #' @export
 az_kusto_database <- R6::R6Class("az_kusto_database", inherit=AzureRMR::az_resource,
 public=list(
@@ -119,7 +116,7 @@ public=list(
         do.call(rbind, lapply(val, as.data.frame, stringsAsFactors=FALSE))
     },
 
-    get_query_endpoint=function(tenant=NULL, user=NULL, pwd=NULL, use_integer64=FALSE)
+    get_database_endpoint=function(tenant=NULL, user=NULL, pwd=NULL, ...)
     {
         if(is.null(tenant))
             tenant <- self$cluster$get_default_tenant()
@@ -127,19 +124,7 @@ public=list(
         token <- self$cluster$get_query_token(tenant)
         server <- self$cluster$properties$queryUri
         database <- basename(self$name)
-        kusto_query_endpoint(server=server, database=database, tenantid=tenant, .azure_token=token,
-            .use_integer64=use_integer64)
-    },
-
-    get_ingestion_endpoint=function(tenant=NULL, user=NULL, pwd=NULL)
-    {
-        if(is.null(tenant))
-            tenant <- self$cluster$get_default_tenant()
-
-        token <- self$cluster$get_ingestion_token(tenant)
-        server <- self$cluster$properties$dataIngestionUri
-        database <- basename(self$name)
-        kusto_ingestion_endpoint(server=server, database=database, tenantid=tenant, .azure_token=token)
+        kusto_database_endpoint(server=server, database=database, tenantid=tenant, .query_token=token, ...)
     }
 ))
 

@@ -10,13 +10,13 @@ You can install the development version from GitHub, via `devtools::install_gith
 
 ### Kusto Endpoint Interface
 
-Connect to a Kusto cluster by instantiating a `kusto_query_endpoint` object with the cluster URI, database name, and an `AzureRMR::AzureToken` object, which you can obtain via the `get_kusto_token` helper function.
+Connect to a Kusto cluster by instantiating a `kusto_database_endpoint` object with the cluster URI, database name, and an `AzureRMR::AzureToken` object, which you can obtain via the `get_kusto_token` helper function.
 
 ```r
 
 library(AzureKusto)
 
-Samples <- kusto_query_endpoint(server="https://help.kusto.windows.net",
+Samples <- kusto_database_endpoint(server="https://help.kusto.windows.net",
     database="Samples",
     .azure_token=get_kusto_token(clustername="help", tenant="microsoft"))
 

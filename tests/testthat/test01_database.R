@@ -40,15 +40,15 @@ test_that("Resource access functions work",
     expect_is(endp1, "kusto_database_endpoint")
 
     server <- srv$properties$queryUri
-    endp2 <- kusto_query_endpoint(server=server, database=dbname, tenantid=tenant)
+    endp2 <- kusto_database_endpoint(server=server, database=dbname, tenantid=tenant)
     expect_is(endp2, "kusto_database_endpoint")
 
-    endp3 <- kusto_query_endpoint(server=server, database=dbname,
+    endp3 <- kusto_database_endpoint(server=server, database=dbname,
         .azure_token=get_kusto_token(cluster=srvname, location=srv$location, tenant=tenant))
     expect_is(endp3, "kusto_database_endpoint")
 
     conn_str <- sprintf("server=%s;database=%s;tenantid=%s", server, dbname, tenant)
-    endp4 <- kusto_query_endpoint(.connection_string=conn_str)
+    endp4 <- kusto_database_endpoint(.connection_string=conn_str)
     expect_is(endp4, "kusto_database_endpoint")
 
     expect_identical(endp1$token$hash(), endp2$token$hash())
@@ -56,12 +56,12 @@ test_that("Resource access functions work",
     expect_identical(endp1$token$hash(), endp4$token$hash())
 
     # using our own app
-    endp5 <- kusto_query_endpoint(server=server, database=dbname, tenantid=tenant,
+    endp5 <- kusto_database_endpoint(server=server, database=dbname, tenantid=tenant,
         appclientid=app, appkey=password)
     expect_is(endp5, "kusto_database_endpoint")
 
     # no trailing / on server should trigger warning
-    expect_warning(kusto_query_endpoint(
+    expect_warning(kusto_database_endpoint(
         server=sprintf("https://%s.%s.kusto.windows.net", srvname, srv$location),
         database=dbname,
         .azure_token=endp4$token))
@@ -70,15 +70,15 @@ test_that("Resource access functions work",
     expect_error(kusto_property_endpoint(badproperty="foo"))
 
     # unsupported property (change this if/when federated auth is supported)
-    expect_warning(kusto_query_endpoint(server=server, database=dbname, tenantid=tenant, fed=TRUE))
+    expect_warning(kusto_database_endpoint(server=server, database=dbname, tenantid=tenant, fed=TRUE))
 
     # quote stripping
-    endp6 <- kusto_query_endpoint(server=sprintf("'%s'", server), database=dbname, tenantid=tenant)
+    endp6 <- kusto_database_endpoint(server=sprintf("'%s'", server), database=dbname, tenantid=tenant)
     expect_identical(endp6$server, endp1$server)
 
     # connection string type handling (change this if/when federated auth is supported)
     conn_str2 <- sprintf("server=%s;database=%s;tenantid=%s;fed=true", server, dbname, tenant)
-    expect_warning(kusto_query_endpoint(.connection_string=conn_str2))
+    expect_warning(kusto_database_endpoint(.connection_string=conn_str2))
 })
 
 

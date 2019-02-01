@@ -17,8 +17,8 @@ if(srvname == "" || srvloc == "" || dbname == "")
 
 server <- sprintf("https://%s.%s.kusto.windows.net", srvname, srvloc)
 
-db <- kusto_query_endpoint(server=server, database=dbname, tenantid=tenant)
-db2 <- kusto_query_endpoint(server=server, database=dbname, tenantid=tenant,
+db <- kusto_database_endpoint(server=server, database=dbname, tenantid=tenant)
+db2 <- kusto_database_endpoint(server=server, database=dbname, tenantid=tenant,
     appclientid=app, appkey=password)
 
 test_that("Queries work",

@@ -2,11 +2,12 @@
 #'
 #' @param ... Named arguments which are the properties for the endpoint object. See 'Details' below for the properties that AzureKusto recognises.
 #' @param .connection_string An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in `...` if they overlap.
-#' @param .azure_token Optionally, an Azure Active Directory token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
-#' @param .use_integer64 For `kusto_query_endpoint`, whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
+#' @param .query_token Optionally, an Azure Active Directory (AAD) token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
+#' @param .ingestion_token Optionally, an AAD token to authenticate with when performing a streaming ingestion.
+#' @param .use_integer64 For `kusto_database_endpoint`, whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
 #'
 #' @details
-#' This is a list of properties recognised by `kusto_query_endpoint` and `kusto_ingestion_endpoint`, and their alternate names. Property names not in this list will generate an error. Note that not all properties that are recognised are currently supported by AzureKusto.
+#' This is a list of properties recognised by `kusto_database_endpoint`, and their alternate names. Property names not in this list will generate an error. Note that not all properties that are recognised are currently supported by AzureKusto.
 #'
 #' General properties:
 #' - server: The URI of the server, usually of the form 'https://{clustername}.{location}.kusto.windows.net'.
@@ -30,7 +31,7 @@
 #' - traceusername: The user name for tracing.
 #' - usertoken: The AAD token for user authentication.
 #' - * usertoken, usrtoken
-#' - fed: Logical, whether federated authentication is enabled. Currently unsupported; if this is TRUE, `kusto_query_endpoint` will print a warning and ignore it.
+#' - fed: Logical, whether federated authentication is enabled. Currently unsupported; if this is TRUE, `kusto_database_endpoint` will print a warning and ignore it.
 #'   * federated security, federated, aadfed
 #'
 #' App authentication properties:
@@ -42,8 +43,8 @@
 #'
 #' Currently, AzureKusto only supports authentication via Azure Active Directory, and only via app or user credentials. Authenticating with federated logins, an AAD certificate, or with DSTS is planned for the future.
 #'
-#' The way `kusto_query_endpoint` obtains an AAD token is as follows.
-#' 1. If the `.azure_token` argument is supplied, use it.
+#' The way `kusto_database_endpoint` obtains an AAD token is as follows.
+#' 1. If the `.query_token` argument is supplied, use it.
 #' 2. Otherwise, if the `usertoken` property is supplied, use it.
 #' 3. Otherwise, if the `apptoken` property is supplied, use it.
 #' 4. Otherwise, if the `appclientid` property is supplied, use it to obtain a token:
@@ -60,27 +61,10 @@
 #' [run_query], [run_command]
 #' @rdname database_endpoint
 #' @export
-kusto_query_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL, .use_integer64=FALSE)
+kusto_database_endpoint <- function(..., .connection_string=NULL,
+    .query_token=NULL, .ingestion_token=NULL, .use_integer64=FALSE)
 {
-    endp <- kusto_database_endpoint(list(...), .connection_string, .azure_token)
-    endp$use_integer64 <- .use_integer64
-    class(endp) <- c("kusto_query_endpoint", class(endp))
-    endp
-}
-
-
-#' @rdname database_endpoint
-#' @export
-kusto_ingestion_endpoint <- function(..., .connection_string=NULL, .azure_token=NULL)
-{
-    endp <- kusto_database_endpoint(list(...), .connection_string, .azure_token)
-    class(endp) <- c("kusto_ingestion_endpoint", class(endp))
-    endp
-}
-
-
-kusto_database_endpoint <- function(props, .connection_string, .azure_token)
-{
+    props <- list(...)
     names(props) <- tolower(names(props))
 
     if(!is.null(.connection_string))
@@ -99,10 +83,10 @@ kusto_database_endpoint <- function(props, .connection_string, .azure_token)
     # fix all property names to a given (sub)set, remove quotes from quoted values
     props <- normalize_properties(props)
 
-    if(!is.null(.azure_token))
-        props$token <- .azure_token
+    if(!is.null(.query_token))
+        props$token <- .query_token
 
-    # if .azure_token arg not supplied, get it from other properties
+    # if .query_token arg not supplied, get it from other properties
     if(is.null(props$token))
         props$token <- find_token(props)
     if(is.null(props$token))
@@ -113,6 +97,9 @@ kusto_database_endpoint <- function(props, .connection_string, .azure_token)
                         props$token$credentials$resource, props$server))
 
     props <- handle_unsupported(props)
+
+    props$use_integer64 <- .use_integer64
+
     class(props) <- "kusto_database_endpoint"
     props
 }

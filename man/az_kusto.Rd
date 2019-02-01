@@ -72,7 +72,7 @@ kust$get_aad_token()
 }
 }
 \seealso{
-\link{az_kusto_database}, \link{kusto_query_endpoint},
+\link{az_kusto_database}, \link{kusto_database_endpoint},
 \link{create_kusto_cluster}, \link{get_kusto_cluster}, \link{delete_kusto_cluster},
 \link{get_kusto_token}
 

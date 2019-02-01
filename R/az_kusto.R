@@ -30,7 +30,7 @@
 #' `get_database` takes a single argument `database`, the name of the database to retrieve, and returns an object of class `az_kusto_database`. `delete_database` takes the name of the database to delete and returns NULL on a successful deletion. `list_databases` takes no arguments and returns a list of `az_kusto_database` objects, one for each database in the cluster.
 #'
 #' @seealso
-#' [az_kusto_database], [kusto_query_endpoint],
+#' [az_kusto_database], [kusto_database_endpoint],
 #' [create_kusto_cluster], [get_kusto_cluster], [delete_kusto_cluster],
 #' [get_kusto_token]
 #'

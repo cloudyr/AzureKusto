@@ -16,7 +16,7 @@ run_command(database, ...)
 \method{run_command}{kusto_database_endpoint}(database, command, ...)
 }
 \arguments{
-\item{database}{A Kusto database endpoint object, as returned by \code{kusto_query_endpoint}.}
+\item{database}{A Kusto database endpoint object, as returned by \code{kusto_database_endpoint}.}
 
 \item{...}{For \code{run_query}, named arguments to be used as parameters for a parameterized query.}
 
@@ -29,5 +29,5 @@ Run a query or command against a Kusto database
 These functions are the workhorses of the AzureKusto package. They communicate with the Kusto server and return the query or command results, as data frames.
 }
 \seealso{
-\link{kusto_query_endpoint}
+\link{kusto_database_endpoint}
 }

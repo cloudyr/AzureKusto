@@ -7,7 +7,7 @@
 
 #' Run a query or command against a Kusto database
 #'
-#' @param database A Kusto database endpoint object, as returned by `kusto_query_endpoint`.
+#' @param database A Kusto database endpoint object, as returned by `kusto_database_endpoint`.
 #' @param query,command A string containing the query or command. Note that database management commands in KQL are distinct from queries.
 #' @param ... For `run_query`, named arguments to be used as parameters for a parameterized query.
 #'
@@ -15,7 +15,7 @@
 #' These functions are the workhorses of the AzureKusto package. They communicate with the Kusto server and return the query or command results, as data frames.
 #'
 #' @seealso
-#' [kusto_query_endpoint]
+#' [kusto_database_endpoint]
 #' @rdname query
 #' @export
 run_query <- function(database, ...)
