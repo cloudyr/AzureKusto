@@ -23,40 +23,40 @@ db2 <- kusto_database_endpoint(server=server, database=dbname, tenantid=tenant,
 
 test_that("Queries work",
 {
-    out <- run_query(db, "iris | summarize count() by species")
+    out <- call_kusto(db, "iris | summarize count() by species")
     expect_is(out, "data.frame")
 
     dberr <- db
     dberr$token <- NULL
-    expect_error(run_query(dberr, "iris | summarize count() by species"))
+    expect_error(call_kusto(dberr, "iris | summarize count() by species"))
 })
 
 test_that("Commands work",
 {
-    out <- run_command(db2, ".show cluster")
+    out <- call_kusto(db, ".show cluster")
     expect_is(out, "data.frame")
 
     dberr <- db
     dberr$token <- NULL
-    expect_error(run_command(dberr, ".show cluster"))
+    expect_error(call_kusto(dberr, ".show cluster"))
 })
 
 test_that("Queries work with own app",
 {
-    out <- run_query(db2, "iris | summarize count() by species")
+    out <- call_kusto(db2, "iris | summarize count() by species")
     expect_is(out, "data.frame")
 
     dberr <- db2
     dberr$token <- NULL
-    expect_error(run_query(dberr, "iris | summarize count() by species"))
+    expect_error(call_kusto(dberr, "iris | summarize count() by species"))
 })
 
 test_that("Commands work with own app",
 {
-    out <- run_command(db2, ".show cluster")
+    out <- call_kusto(db2, ".show cluster")
     expect_is(out, "data.frame")
 
     dberr <- db2
     dberr$token <- NULL
-    expect_error(run_command(dberr, ".show cluster"))
+    expect_error(call_kusto(dberr, ".show cluster"))
 })

@@ -58,7 +58,7 @@
 #' @return
 #' An object of class `kusto_database_endpoint`.
 #' @seealso
-#' [run_query], [run_command]
+#' [call_kusto], [az_kusto_database]
 #' @rdname database_endpoint
 #' @export
 kusto_database_endpoint <- function(..., .connection_string=NULL,
@@ -84,7 +84,7 @@ kusto_database_endpoint <- function(..., .connection_string=NULL,
     props <- normalize_connstring_properties(props)
 
     props$token <- find_endpoint_token(props, .query_token)
-    if(is_azure_token(props$token) && props$token$credentials$resource != props$server)
+    if(AzureRMR::is_azure_token(props$token) && props$token$credentials$resource != props$server)
         warning(sprintf("Mismatch between server (%s) and token resource (%s)",
                         props$token$credentials$resource, props$server))
 

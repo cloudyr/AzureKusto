@@ -36,7 +36,7 @@ test_that("Resource access functions work",
     db <- srv$get_database(dbname)
     expect_true(is_kusto_database(db))
 
-    endp1 <- db$get_query_endpoint()
+    endp1 <- db$get_database_endpoint()
     expect_is(endp1, "kusto_database_endpoint")
 
     server <- srv$properties$queryUri
@@ -44,7 +44,7 @@ test_that("Resource access functions work",
     expect_is(endp2, "kusto_database_endpoint")
 
     endp3 <- kusto_database_endpoint(server=server, database=dbname,
-        .azure_token=get_kusto_token(cluster=srvname, location=srv$location, tenant=tenant))
+        .query_token=get_kusto_token(cluster=srvname, location=srv$location, tenant=tenant))
     expect_is(endp3, "kusto_database_endpoint")
 
     conn_str <- sprintf("server=%s;database=%s;tenantid=%s", server, dbname, tenant)
@@ -64,7 +64,7 @@ test_that("Resource access functions work",
     expect_warning(kusto_database_endpoint(
         server=sprintf("https://%s.%s.kusto.windows.net", srvname, srv$location),
         database=dbname,
-        .azure_token=endp4$token))
+        .query_token=endp4$token))
 
     # invalid property
     expect_error(kusto_property_endpoint(badproperty="foo"))

@@ -26,11 +26,11 @@ Samples <- kusto_database_endpoint(server="https://help.kusto.windows.net",
 # Authentication complete.
 ```
 
-Now you can issue queries to the Kusto database with `run_query` and get the results back as a data.frame.
+Now you can issue queries to the Kusto database with `call_kusto` and get the results back as a data.frame.
 
 ```r
 
-res <- run_query(Samples, "StormEvents | summarize EventCount = count() by State | order by State asc")
+res <- call_kusto(Samples, "StormEvents | summarize EventCount = count() by State | order by State asc")
 
 head(res)
 
@@ -44,20 +44,19 @@ head(res)
 
 ```
 
-`run_query()` also supports query parameters. Simply pass your parameters as additional keyword arguments and they will be escaped and interpolated into the query string.
+`call_kusto()` also supports query parameters. Simply pass your parameters as additional keyword arguments and they will be escaped and interpolated into the query string.
 
 ```r
 
-res <- run_query(Samples, "MyFunction(lim)", lim=10L)
+res <- call_kusto(Samples, "MyFunction(lim)", lim=10L)
 
 ```
 
-Command statements can be run with `run_command()`.
-Note that commands do not accept parameters.
+Command statements work much the same way, except that they do not accept parameters.
 
 ```r
 
-res <- run_command(Samples, ".show tables | count")
+res <- call_kusto(Samples, ".show tables | count")
 
 ```
 
