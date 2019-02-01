@@ -16,14 +16,13 @@ ingest_from_file <- function(database, src_file, dest_table, streaming_ingest=FA
 #' @export
 ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
 {
-    src_str <- obfuscate_str(src)
     prop_list <- get_ingestion_properties(...)
 
     cmd <- paste(".ingest",
         if(async) "async" else NULL,
         "into table",
         dest_table,
-        "(", src_str, ")",
+        "(", obfuscate_string(src), ")",
         prop_list)
     return(cmd)
     call_kusto(database, cmd, ...)
@@ -45,7 +44,23 @@ ingest_from_blob <- function(database, src, key=NULL, token=NULL, sas=NULL,
 }
 
 
-obfuscate_str <- function(string)
+#' @export
+ingest_from_adls2 <- function(database, src, key=NULL, token=NULL, sas=NULL,
+                              dest_table, async=FALSE, ...)
+{
+    if(!is.null(key))
+        src <- paste0(src, ";sharedkey=", key)
+    else if(!is.null(token))
+        src <- paste0(src, ";token=", validate_token(token))
+    else if(!is.null(sas))
+        stop("ADLSgen2 does not support use of shared access signatures")
+    else src <- paste0(src, ";impersonate")
+
+    ingest_from0_url(database, src, dest_table, async, ...)
+}
+
+
+obfuscate_string <- function(string)
 {
     paste0("h'", string, "'")
 }
