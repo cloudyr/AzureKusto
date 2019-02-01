@@ -37,7 +37,7 @@ ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
         "(", obfuscate_string(src), ")",
         prop_list)
 
-    call_kusto(database, cmd, ...)
+    run_query(database, cmd, ...)
 }
 
 
@@ -53,7 +53,7 @@ ingest_from_blob <- function(database, src, key=NULL, token=NULL, sas=NULL,
     else if(!is.null(sas))
         src <- paste0(src, "?", sas)
 
-    ingest_from0_url(database, src, dest_table, async, ...)
+    ingest_from_url(database, src, dest_table, async, ...)
 }
 
 
@@ -70,7 +70,7 @@ ingest_from_adls2 <- function(database, src, key=NULL, token=NULL, sas=NULL,
         stop("ADLSgen2 does not support use of shared access signatures")
     else src <- paste0(src, ";impersonate")
 
-    ingest_from0_url(database, src, dest_table, async, ...)
+    ingest_from_url(database, src, dest_table, async, ...)
 }
 
 

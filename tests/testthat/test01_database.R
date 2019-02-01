@@ -15,6 +15,9 @@ dbname <- Sys.getenv("AZ_TEST_KUSTO_DATABASE")
 if(rgname == "" || srvname == "" || dbname == "")
     skip("Database endpoint tests skipped: server info not set")
 
+if(!interactive())
+    skip("Database endpoint tests skipped: must be an interactive session")
+
 rg <- AzureRMR::az_rm$
     new(tenant=tenant, app=app, password=password)$
     get_subscription(subscription)$

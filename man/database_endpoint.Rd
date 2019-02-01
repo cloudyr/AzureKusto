@@ -107,5 +107,5 @@ The way \code{kusto_database_endpoint} obtains an AAD token is as follows.
 }
 }
 \seealso{
-\link{call_kusto}, \link{az_kusto_database}
+\link{run_query}, \link{az_kusto_database}
 }

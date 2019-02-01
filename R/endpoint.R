@@ -58,7 +58,7 @@
 #' @return
 #' An object of class `kusto_database_endpoint`.
 #' @seealso
-#' [call_kusto], [az_kusto_database]
+#' [run_query], [az_kusto_database]
 #' @rdname database_endpoint
 #' @export
 kusto_database_endpoint <- function(..., .connection_string=NULL,
