@@ -12,6 +12,8 @@ call_kusto(database, qry_cmd, ..., .http_status_handler = "stop")
 \item{qry_cmd}{A string containing the query or command. In KQL, a database management command is a statement that starts with a "."}
 
 \item{...}{Named arguments to be used as parameters for a parameterized query. These are ignored for database management commands.}
+
+\item{.http_status_handler}{The function to use to handle HTTP status codes. The default "stop" will throw an R error via \code{httr::stop_for_status} if the status code is not less than 300; use "pass" to pass through the raw response object unchanged. This is mostly useful for debugging purposes, or if you want to see what the Kusto API returns.}
 }
 \description{
 Run a query or command against a Kusto database

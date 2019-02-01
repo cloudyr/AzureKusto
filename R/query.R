@@ -10,6 +10,7 @@
 #' @param database A Kusto database endpoint object, as returned by `kusto_database_endpoint`.
 #' @param qry_cmd A string containing the query or command. In KQL, a database management command is a statement that starts with a "."
 #' @param ... Named arguments to be used as parameters for a parameterized query. These are ignored for database management commands.
+#' @param .http_status_handler The function to use to handle HTTP status codes. The default "stop" will throw an R error via `httr::stop_for_status` if the status code is not less than 300; use "pass" to pass through the raw response object unchanged. This is mostly useful for debugging purposes, or if you want to see what the Kusto API returns.
 #'
 #' @details
 #' This function is the workhorse of the AzureKusto package. It communicates with the Kusto server and returns the query or command results, as data frames.

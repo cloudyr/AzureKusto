@@ -1,5 +1,16 @@
+#' Ingestion functions for Kusto
+#'
+#' @param database A Kusto database endpoint object, created with [kusto_database_endpoint].
+#' @param src The source file or URL.
+#' @param dest_table The name of the destination table.
+#' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS.
+#' @param async For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.
+#' @param streaming_ingest For file ingestion, whether to upload the file directly to the ingestion endpoint. If FALSE (the default), the file is instead uploaded to blob storage, and ingested from there.
+#' @param ... Named arguments to be treated as ingestion parameters.
+#'
+#' @rdname ingest
 #' @export
-ingest_from_file <- function(database, src_file, dest_table, streaming_ingest=FALSE, ...)
+ingest_from_file <- function(database, src, dest_table, streaming_ingest=FALSE, ...)
 {
     if(!streaming_ingest)
     {
@@ -13,6 +24,7 @@ ingest_from_file <- function(database, src_file, dest_table, streaming_ingest=FA
 }
 
 
+#' @rdname ingest
 #' @export
 ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
 {
@@ -29,6 +41,7 @@ ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
 }
 
 
+#' @rdname ingest
 #' @export
 ingest_from_blob <- function(database, src, key=NULL, token=NULL, sas=NULL,
                              dest_table, async=FALSE, ...)
@@ -44,6 +57,7 @@ ingest_from_blob <- function(database, src, key=NULL, token=NULL, sas=NULL,
 }
 
 
+#' @rdname ingest
 #' @export
 ingest_from_adls2 <- function(database, src, key=NULL, token=NULL, sas=NULL,
                               dest_table, async=FALSE, ...)
