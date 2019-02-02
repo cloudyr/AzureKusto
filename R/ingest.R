@@ -10,7 +10,7 @@
 #'
 #' @rdname ingest
 #' @export
-ingest_from_file <- function(database, src, dest_table, streaming_ingest=FALSE, ...)
+ingest_from_file <- function(database, src, dest_table, streaming_ingest=FALSE, ingestion_token=NULL, ...)
 {
     if(!streaming_ingest)
     {
@@ -43,8 +43,7 @@ ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
 
 #' @rdname ingest
 #' @export
-ingest_from_blob <- function(database, src, key=NULL, token=NULL, sas=NULL,
-                             dest_table, async=FALSE, ...)
+ingest_from_blob <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
 {
     if(!is.null(key))
         src <- paste0(src, ";", key)
@@ -59,11 +58,10 @@ ingest_from_blob <- function(database, src, key=NULL, token=NULL, sas=NULL,
 
 #' @rdname ingest
 #' @export
-ingest_from_adls2 <- function(database, src, key=NULL, token=NULL, sas=NULL,
-                              dest_table, async=FALSE, ...)
+ingest_from_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
 {
     if(!is.null(key))
-        src <- paste0(src, ";sharedkey=", key)
+        src <- paste0(src, ";", key)
     else if(!is.null(token))
         src <- paste0(src, ";token=", validate_token(token))
     else if(!is.null(sas))

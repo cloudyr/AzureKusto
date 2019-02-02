@@ -16,7 +16,7 @@
 #' This function is the workhorse of the AzureKusto package. It communicates with the Kusto server and returns the query or command results, as data frames.
 #'
 #' @seealso
-#' [kusto_database_endpoint]
+#' [kusto_database_endpoint], [ingest_from_file], [ingest_from_url]
 #' @export
 run_query <- function(database, qry_cmd, ..., .http_status_handler="stop")
 {
