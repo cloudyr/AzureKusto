@@ -5,7 +5,7 @@
 #' @param dest_table The name of the destination table.
 #' @param streaming_ingest For file ingestion, whether to upload the file directly to the ingestion endpoint. If FALSE (the default), the file is instead uploaded to blob storage, and ingested from there.
 #' @param ingestion_token For file ingestion, an authentication token for the cluster ingestion endpoint. Only used if `streaming_ingest=TRUE`.
-#' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS.
+#' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS. Note that these arguments are for authenticating with the Azure _storage account_, as opposed to Kusto itself.
 #' @param async For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.
 #' @param ... Named arguments to be treated as ingestion parameters.
 #'
@@ -38,7 +38,7 @@ ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
         "(", obfuscate_string(src), ")",
         prop_list)
 
-    run_query(database, cmd, ...)
+    invisible(run_query(database, cmd))
 }
 
 

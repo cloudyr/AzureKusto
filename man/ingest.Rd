@@ -27,11 +27,13 @@ ingest_from_adls2(database, src, dest_table, async = FALSE, key = NULL,
 
 \item{streaming_ingest}{For file ingestion, whether to upload the file directly to the ingestion endpoint. If FALSE (the default), the file is instead uploaded to blob storage, and ingested from there.}
 
+\item{ingestion_token}{For file ingestion, an authentication token for the cluster ingestion endpoint. Only used if \code{streaming_ingest=TRUE}.}
+
 \item{...}{Named arguments to be treated as ingestion parameters.}
 
 \item{async}{For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.}
 
-\item{key, token, sas}{Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS.}
+\item{key, token, sas}{Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS. Note that these arguments are for authenticating with the Azure \emph{storage account}, as opposed to Kusto itself.}
 }
 \description{
 Ingestion functions for Kusto
