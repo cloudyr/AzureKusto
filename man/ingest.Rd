@@ -8,15 +8,15 @@
 \title{Ingestion functions for Kusto}
 \usage{
 ingest_from_file(database, src, dest_table, streaming_ingest = FALSE,
-  ...)
+  ingestion_token = NULL, ...)
 
 ingest_from_url(database, src, dest_table, async = FALSE, ...)
 
-ingest_from_blob(database, src, key = NULL, token = NULL, sas = NULL,
-  dest_table, async = FALSE, ...)
+ingest_from_blob(database, src, dest_table, async = FALSE, key = NULL,
+  token = NULL, sas = NULL, ...)
 
-ingest_from_adls2(database, src, key = NULL, token = NULL,
-  sas = NULL, dest_table, async = FALSE, ...)
+ingest_from_adls2(database, src, dest_table, async = FALSE, key = NULL,
+  token = NULL, sas = NULL, ...)
 }
 \arguments{
 \item{database}{A Kusto database endpoint object, created with \link{kusto_database_endpoint}.}

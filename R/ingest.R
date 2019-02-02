@@ -3,9 +3,10 @@
 #' @param database A Kusto database endpoint object, created with [kusto_database_endpoint].
 #' @param src The source file or URL.
 #' @param dest_table The name of the destination table.
+#' @param streaming_ingest For file ingestion, whether to upload the file directly to the ingestion endpoint. If FALSE (the default), the file is instead uploaded to blob storage, and ingested from there.
+#' @param ingestion_token For file ingestion, an authentication token for the cluster ingestion endpoint. Only used if `streaming_ingest=TRUE`.
 #' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS.
 #' @param async For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.
-#' @param streaming_ingest For file ingestion, whether to upload the file directly to the ingestion endpoint. If FALSE (the default), the file is instead uploaded to blob storage, and ingested from there.
 #' @param ... Named arguments to be treated as ingestion parameters.
 #'
 #' @rdname ingest
@@ -60,6 +61,17 @@ ingest_from_blob <- function(database, src, dest_table, async=FALSE, key=NULL, t
 #' @export
 ingest_from_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
 {
+    # convert https URI into abfss for Kusto
+    src_uri <- httr::parse_url(src)
+    if(src_uri$scheme != "abfss")
+    {
+        message("ADLSgen2 URIs should be specified as 'abfss://filesystem@host/path/file'")
+        src_uri$scheme <- "abfss"
+        src_uri$username <- sub("/.+$", "", src_uri$path)
+        src_uri$path <- sub("^[^/]+/", "", src_uri$path)
+        src <- httr::build_url(src_uri)
+    }
+
     if(!is.null(key))
         src <- paste0(src, ";", key)
     else if(!is.null(token))
@@ -95,3 +107,5 @@ get_ingestion_properties <- function(...)
 
     paste("with (", paste(prop_list, collapse=", "), ")")
 }
+
+

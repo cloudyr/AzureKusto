@@ -22,5 +22,5 @@ Run a query or command against a Kusto database
 This function is the workhorse of the AzureKusto package. It communicates with the Kusto server and returns the query or command results, as data frames.
 }
 \seealso{
-\link{kusto_database_endpoint}
+\link{kusto_database_endpoint}, \link{ingest_from_file}, \link{ingest_from_url}
 }
