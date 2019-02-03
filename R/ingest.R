@@ -19,7 +19,7 @@
 #'
 #' @rdname ingest
 #' @export
-ingest_from_local <- function(database, src, dest_table, method=NULL, staging_container=NULL, ingestion_token=NULL,
+ingest_local <- function(database, src, dest_table, method=NULL, staging_container=NULL, ingestion_token=NULL,
                               http_status_handler="stop", ...)
 {
     AzureStor <- requireNamespace(AzureStor)
@@ -40,7 +40,7 @@ ingest_from_local <- function(database, src, dest_table, method=NULL, staging_co
 
 #' @rdname ingest
 #' @export
-ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
+ingest_url <- function(database, src, dest_table, async=FALSE, ...)
 {
     prop_list <- get_ingestion_properties(...)
 
@@ -57,7 +57,7 @@ ingest_from_url <- function(database, src, dest_table, async=FALSE, ...)
 
 #' @rdname ingest
 #' @export
-ingest_from_blob <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
+ingest_blob <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
 {
     if(!is.null(key))
         src <- paste0(src, ";", key)
@@ -66,13 +66,13 @@ ingest_from_blob <- function(database, src, dest_table, async=FALSE, key=NULL, t
     else if(!is.null(sas))
         src <- paste0(src, "?", sas)
 
-    ingest_from_url(database, src, dest_table, async, ...)
+    ingest_url(database, src, dest_table, async, ...)
 }
 
 
 #' @rdname ingest
 #' @export
-ingest_from_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
+ingest_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
 {
     # convert https URI into abfss for Kusto
     src_uri <- httr::parse_url(src)
@@ -93,7 +93,7 @@ ingest_from_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, 
         stop("ADLSgen2 does not support use of shared access signatures")
     else src <- paste0(src, ";impersonate")
 
-    ingest_from_url(database, src, dest_table, async, ...)
+    ingest_url(database, src, dest_table, async, ...)
 }
 
 
@@ -105,7 +105,7 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
     {
         con <- textConnection(NULL, "w")
         on.exit(close(con))
-        write.csv(src, con, row.names=FALSE, col.names=FALSE)
+        utils::write.csv(src, con, row.names=FALSE, col.names=FALSE)
         body <- textConnectionValue(con)
         opts <- utils::modifyList(opts, list(streamFormat="Csv"))
     }
@@ -114,7 +114,7 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
     if(is.null(database$ingestion_uri))
     {
         ingest_uri <- httr::parse_url(database$server)
-        ingest_uri$host <- paste0("ingest-", server$host)
+        ingest_uri$host <- paste0("ingest-", ingest_uri$host)
     }
     else ingest_uri <- httr::parse_url(database$ingestion_uri)
 
