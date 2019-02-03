@@ -123,7 +123,7 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
 
     headers <- list(
         Authorization=paste("Bearer", validate_token(ingestion_token)),
-        Content-Length=sprintf("%.0f", length(body))
+        `Content-Length`=sprintf("%.0f", length(body))
     )
 
     res <- httr::POST(ingest_uri, headers, body, encode="raw")

@@ -8,7 +8,8 @@
 \title{Ingestion functions for Kusto}
 \usage{
 ingest_from_local(database, src, dest_table, method = NULL,
-  ingestion_token = NULL, staging_container = NULL, ...)
+  staging_container = NULL, ingestion_token = NULL,
+  http_status_handler = "stop", ...)
 
 ingest_from_url(database, src, dest_table, async = FALSE, ...)
 
@@ -27,9 +28,11 @@ ingest_from_adls2(database, src, dest_table, async = FALSE, key = NULL,
 
 \item{method}{For local ingestion, the method to use. See 'Details' below.}
 
+\item{staging_container}{For local ingestion, an Azure Storage container object to use for staging the dataset. Only used if \code{method="indirect"}.}
+
 \item{ingestion_token}{For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if \code{method="streaming"}.}
 
-\item{staging_container}{For local ingestion, an Azure Storage container object to use for staging the dataset. Only used if \code{method="indirect"}.}
+\item{http_status_handler}{For local ingestion, how to handle HTTP conditions >= 300. Defaults to "stop"; alternatives are "warn", "message" and "pass". The last option will pass through the raw response object from the server unchanged, regardless of the status code. This is mostly useful for debugging purposes, or if you want to see what the Kusto REST API does. Only used if \code{method="streaming"}.}
 
 \item{...}{Named arguments to be treated as ingestion parameters.}
 
@@ -44,7 +47,7 @@ Ingestion functions for Kusto
 There are up to 3 possible ways to ingest a local dataset, specified by the \code{method} argument.
 \itemize{
 \item \code{method="indirect"}: The data is uploaded to blob storage, and then ingested from there. This is the default if the AzureStor package is present.
-\item \code{method="streaming"}: The data is uploaded to the cluster ingestion endpoint. This is the default if the AzureStor package is not present, however note that currently (February 2019) streaming ingestion has to be explicitly enabled for a cluster by filing a support ticket.
+\item \code{method="streaming"}: The data is uploaded to the cluster ingestion endpoint. This is the default if the AzureStor package is not present, however be aware that currently (as of February 2019) streaming ingestion is in beta and has to be enabled for a cluster by filing a support ticket.
 \item \code{method="inline"}: The data is embedded into the command text itself. This is only recommended for testing purposes, or small datasets.
 }
 }
