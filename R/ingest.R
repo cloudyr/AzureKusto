@@ -114,7 +114,7 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
     if(is.null(database$ingestion_uri))
     {
         ingest_uri <- httr::parse_url(database$server)
-        ingest_uri$host <- paste0("ingest-", ingest_uri$host)
+        ingest_uri$hostname <- paste0("ingest-", ingest_uri$hostname)
     }
     else ingest_uri <- httr::parse_url(database$ingestion_uri)
 
