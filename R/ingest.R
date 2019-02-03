@@ -141,28 +141,28 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
 
 ingest_indirect <- function(database, src, dest_table, staging_container=NULL, ...)
 {
-    type <- if(inherits(staging_container, "blob_container")) "blob"
-    else if(inherits(staging_container, "adls_filesystem")) "adls"
-    else stop("Unsupported staging container type", call.=FALSE)
+    if(!requireNamespace("AzureStor"))
+        stop("AzureStor package must be installed to do indirect ingestion", call.=FALSE)
 
-    if(type == "blob")
+    if(inherits(staging_container, "blob_container"))
     {
-        upload <- get("upload_blob", getNamespace("AzureStor"))
-        upload(staging_container, src, dest_table)
+        uploadfunc <- get("upload_blob", getNamespace("AzureStor"))
+        uploadfunc(staging_container, src, dest_table)
         url <- httr::parse_url(staging_container$endpoint$url)
         url$path <- file.path(staging_container$name, dest_table)
         ingest_blob(database, httr::build_url(url), dest_table, ...)
     }
-    else
+    else if(inherits(staging_container, "adls_filesystem"))
     {
-        upload <- get("upload_adls_file", getNamespace("AzureStor"))
-        upload(staging_container, src, dest_table)
+        uploadfunc <- get("upload_adls_file", getNamespace("AzureStor"))
+        uploadfunc(staging_container, src, dest_table)
         url <- httr::parse_url(staging_container$endpoint$url)
         url$scheme <- "abfss"
-        url$user <- staging_container$name
+        url$username <- staging_container$name
         url$path <- dest_table
         ingest_adls2(database, httr::build_url(url), dest_table, ...)
     }
+    else stop("Unsupported staging container type", call.=FALSE)
 }
 
 
