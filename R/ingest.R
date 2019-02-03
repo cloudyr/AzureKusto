@@ -147,14 +147,16 @@ ingest_indirect <- function(database, src, dest_table, staging_container=NULL, .
 
     if(type == "blob")
     {
-        AzureStor::upload_blob(staging_container, src, dest_table)
+        upload <- get("upload_blob", getNamespace("AzureStor"))
+        upload(staging_container, src, dest_table)
         url <- httr::parse_url(staging_container$endpoint$url)
         url$path <- file.path(staging_container$name, dest_table)
         ingest_blob(database, httr::build_url(url), dest_table, ...)
     }
     else
     {
-        Azurestor::upload_adls_file(staging_container, src, dest_table)
+        upload <- get("upload_adls_file", getNamespace("AzureStor"))
+        upload(staging_container, src, dest_table)
         url <- httr::parse_url(staging_container$endpoint$url)
         url$scheme <- "abfss"
         url$user <- staging_container$name
