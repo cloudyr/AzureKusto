@@ -30,7 +30,7 @@ ingest_from_local <- function(database, src, dest_table, method=NULL, staging_co
         indirect=
             ingest_indirect(database, src, dest_table, staging_container, ...),
         streaming=
-            ingest_stream(database, src, dest_table, ingestion_token, ...),
+            ingest_stream(database, src, dest_table, ingestion_token, http_status_handler, ...),
         inline=
             ingest_inline(database, src, dest_table, ...),
         stop("Bad ingestion method argument", call.=FALSE)
