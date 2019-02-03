@@ -4,8 +4,9 @@
 #' @param src The source data. This can be either a data frame, local filename, or URL.
 #' @param dest_table The name of the destination table.
 #' @param method For local ingestion, the method to use. See 'Details' below.
-#' @param ingestion_token For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if `method="streaming"`.
 #' @param staging_container For local ingestion, an Azure Storage container object to use for staging the dataset. Only used if `method="indirect"`.
+#' @param ingestion_token For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if `method="streaming"`.
+#' @param http_status_handler For local ingestion, how to handle HTTP conditions >= 300. Defaults to "stop"; alternatives are "warn", "message" and "pass". The last option will pass through the raw response object from the server unchanged, regardless of the status code. This is mostly useful for debugging purposes, or if you want to see what the Kusto REST API does. Only used if `method="streaming"`.
 #' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS. Note that these arguments are for authenticating with the Azure _storage account_, as opposed to Kusto itself.
 #' @param async For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.
 #' @param ... Named arguments to be treated as ingestion parameters.
@@ -13,13 +14,13 @@
 #' @details
 #' There are up to 3 possible ways to ingest a local dataset, specified by the `method` argument.
 #' - `method="indirect"`: The data is uploaded to blob storage, and then ingested from there. This is the default if the AzureStor package is present.
-#' - `method="streaming"`: The data is uploaded to the cluster ingestion endpoint. This is the default if the AzureStor package is not present, however note that currently (February 2019) streaming ingestion has to be explicitly enabled for a cluster by filing a support ticket.
+#' - `method="streaming"`: The data is uploaded to the cluster ingestion endpoint. This is the default if the AzureStor package is not present, however be aware that currently (as of February 2019) streaming ingestion is in beta and has to be enabled for a cluster by filing a support ticket.
 #' - `method="inline"`: The data is embedded into the command text itself. This is only recommended for testing purposes, or small datasets.
 #'
 #' @rdname ingest
 #' @export
-ingest_from_local <- function(database, src, dest_table, method=NULL, ingestion_token=NULL, staging_container=NULL,
-                              ...)
+ingest_from_local <- function(database, src, dest_table, method=NULL, staging_container=NULL, ingestion_token=NULL,
+                              http_status_handler="stop", ...)
 {
     AzureStor <- requireNamespace(AzureStor)
     if(is.null(method))
@@ -96,9 +97,45 @@ ingest_from_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, 
 }
 
 
-ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, ...)
+ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_status_handler="stop", ...)
 {
-    
+    opts <- list(...)
+
+    if(is.data.frame(src))
+    {
+        con <- textConnection(NULL, "w")
+        on.exit(close(con))
+        write.csv(src, con, row.names=FALSE, col.names=FALSE)
+        body <- textConnectionValue(con)
+        opts <- utils::modifyList(opts, list(streamFormat="Csv"))
+    }
+    else body <- readBin(src, "raw", file.info(src)$size)
+
+    if(is.null(database$ingestion_uri))
+    {
+        ingest_uri <- httr::parse_url(database$server)
+        ingest_uri$host <- paste0("ingest-", server$host)
+    }
+    else ingest_uri <- httr::parse_url(database$ingestion_uri)
+
+    ingest_uri$path <- file.path("v1/rest/ingest", database$database, dest_table)
+    ingest_uri$query <- opts
+
+    headers <- list(
+        Authorization=paste("Bearer", validate_token(ingestion_token)),
+        Content-Length=sprintf("%.0f", length(body))
+    )
+
+    res <- httr::POST(ingest_uri, headers, body, encode="raw")
+
+    http_status_handler <- match.arg(http_status_handler)
+    if(http_status_handler == "pass")
+        return(res)
+
+    cont <- httr::content(res, simplifyVector=TRUE)
+    handler <- get(paste0(http_status_handler, "_for_status"), getNamespace("httr"))
+    handler(res, make_error_message(cont))
+    cont
 }
 
 

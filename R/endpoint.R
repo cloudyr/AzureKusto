@@ -3,7 +3,8 @@
 #' @param ... Named arguments which are the properties for the endpoint object. See 'Details' below for the properties that AzureKusto recognises.
 #' @param .connection_string An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in `...` if they overlap.
 #' @param .query_token Optionally, an Azure Active Directory (AAD) token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
-#' @param .ingestion_token Optionally, an AAD token to authenticate with when performing a streaming ingestion.
+#' @param .ingestion_token Optionally, an AAD token to authenticate with when performing a streaming ingestion. Note that streaming ingestion is currently (February 2019) in beta and must be enabled for a cluster by making a support request.
+#' @param .ingestion_uri Optionally, the URI to use for streaming ingestion. Defaults to ""
 #' @param .use_integer64 For `kusto_database_endpoint`, whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
 #'
 #' @details
@@ -62,7 +63,7 @@
 #' @rdname database_endpoint
 #' @export
 kusto_database_endpoint <- function(..., .connection_string=NULL,
-    .query_token=NULL, .ingestion_token=NULL, .use_integer64=FALSE)
+    .query_token=NULL, .ingestion_token=NULL, .ingestion_uri=NULL, .use_integer64=FALSE)
 {
     props <- list(...)
     names(props) <- tolower(names(props))
@@ -90,6 +91,9 @@ kusto_database_endpoint <- function(..., .connection_string=NULL,
 
     props$use_integer64 <- .use_integer64
     props <- check_endpoint_properties(props)
+
+    props$ingestion_token <- .ingestion_token
+    props$ingestion_uri <- .ingestion_uri
 
     class(props) <- "kusto_database_endpoint"
     props
