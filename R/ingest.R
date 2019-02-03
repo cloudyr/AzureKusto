@@ -4,7 +4,7 @@
 #' @param src The source data. This can be either a data frame, local filename, or URL.
 #' @param dest_table The name of the destination table.
 #' @param method For local ingestion, the method to use. See 'Details' below.
-#' @param staging_container For local ingestion, an Azure Storage container object to use for staging the dataset. Only used if `method="indirect"`.
+#' @param staging_container For local ingestion, an Azure storage container to use for staging the dataset. This can be an object of class either [AzureStor::blob_container] or [AzureStor::adls_filesystem]. Only used if `method="indirect"`.
 #' @param ingestion_token For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if `method="streaming"`.
 #' @param http_status_handler For local ingestion, how to handle HTTP conditions >= 300. Defaults to "stop"; alternatives are "warn", "message" and "pass". The last option will pass through the raw response object from the server unchanged, regardless of the status code. This is mostly useful for debugging purposes, or if you want to see what the Kusto REST API does. Only used if `method="streaming"`.
 #' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS. Note that these arguments are for authenticating with the Azure _storage account_, as opposed to Kusto itself.
@@ -20,7 +20,7 @@
 #' @rdname ingest
 #' @export
 ingest_local <- function(database, src, dest_table, method=NULL, staging_container=NULL, ingestion_token=NULL,
-                              http_status_handler="stop", ...)
+    http_status_handler="stop", ...)
 {
     AzureStor <- requireNamespace(AzureStor)
     if(is.null(method))
@@ -76,7 +76,7 @@ ingest_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token
 {
     # convert https URI into abfss for Kusto
     src_uri <- httr::parse_url(src)
-    if(src_uri$scheme != "abfss")
+    if(grepl("^http", src_uri$scheme))
     {
         message("ADLSgen2 URIs should be specified as 'abfss://filesystem@host/path/file'")
         src_uri$scheme <- "abfss"
@@ -141,13 +141,49 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
 
 ingest_indirect <- function(database, src, dest_table, staging_container=NULL, ...)
 {
+    type <- if(inherits(staging_container, "blob_container")) "blob"
+    else if(inherits(staging_container, "adls_filesystem")) "adls"
+    else stop("Unsupported staging container type", call.=FALSE)
 
+    if(type == "blob")
+    {
+        AzureStor::upload_blob(staging_container, src, dest_table)
+        url <- httr::parse_url(staging_container$endpoint$url)
+        url$path <- file.path(staging_container$name, dest_table)
+        ingest_blob(database, httr::build_url(url), dest_table, ...)
+    }
+    else
+    {
+        Azurestor::upload_adls_file(staging_container, src, dest_table)
+        url <- httr::parse_url(staging_container$endpoint$url)
+        url$scheme <- "abfss"
+        url$user <- staging_container$name
+        url$path <- dest_table
+        ingest_adls2(database, httr::build_url(url), dest_table, ...)
+    }
 }
 
 
 ingest_inline <- function(database, src, dest_table, ...)
 {
+    prop_list <- get_ingestion_properties(...)
 
+    if(is.data.frame(src))
+    {
+        con <- textConnection(NULL, "w")
+        on.exit(close(con))
+        utils::write.csv(src, con, row.names=FALSE, col.names=FALSE)
+        records <- textConnectionValue(con)
+    }
+    else records <- readLines(src)
+
+    cmd <- paste(".ingest inline into table",
+        dest_table,
+        prop_list,
+        "<|\n",
+        paste0(records, collapse="\n"))
+
+    invisible(run_query(database, cmd))
 }
 
 

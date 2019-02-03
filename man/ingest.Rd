@@ -28,7 +28,7 @@ ingest_adls2(database, src, dest_table, async = FALSE, key = NULL,
 
 \item{method}{For local ingestion, the method to use. See 'Details' below.}
 
-\item{staging_container}{For local ingestion, an Azure Storage container object to use for staging the dataset. Only used if \code{method="indirect"}.}
+\item{staging_container}{For local ingestion, an Azure storage container to use for staging the dataset. This can be an object of class either \link[AzureStor:blob_container]{AzureStor::blob_container} or \link[AzureStor:adls_filesystem]{AzureStor::adls_filesystem}. Only used if \code{method="indirect"}.}
 
 \item{ingestion_token}{For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if \code{method="streaming"}.}
 
