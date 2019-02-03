@@ -1,27 +1,39 @@
 #' Ingestion functions for Kusto
 #'
 #' @param database A Kusto database endpoint object, created with [kusto_database_endpoint].
-#' @param src The source file or URL.
+#' @param src The source data. This can be either a data frame, local filename, or URL.
 #' @param dest_table The name of the destination table.
-#' @param streaming_ingest For file ingestion, whether to upload the file directly to the ingestion endpoint. If FALSE (the default), the file is instead uploaded to blob storage, and ingested from there.
-#' @param ingestion_token For file ingestion, an authentication token for the cluster ingestion endpoint. Only used if `streaming_ingest=TRUE`.
+#' @param method For local ingestion, the method to use. See 'Details' below.
+#' @param ingestion_token For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if `method="streaming"`.
+#' @param staging_container For local ingestion, an Azure Storage container object to use for staging the dataset. Only used if `method="indirect"`.
 #' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS. Note that these arguments are for authenticating with the Azure _storage account_, as opposed to Kusto itself.
 #' @param async For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.
 #' @param ... Named arguments to be treated as ingestion parameters.
 #'
+#' @details
+#' There are up to 3 possible ways to ingest a local dataset, specified by the `method` argument.
+#' - `method="indirect"`: The data is uploaded to blob storage, and then ingested from there. This is the default if the AzureStor package is present.
+#' - `method="streaming"`: The data is uploaded to the cluster ingestion endpoint. This is the default if the AzureStor package is not present, however note that currently (February 2019) streaming ingestion has to be explicitly enabled for a cluster by filing a support ticket.
+#' - `method="inline"`: The data is embedded into the command text itself. This is only recommended for testing purposes, or small datasets.
+#'
 #' @rdname ingest
 #' @export
-ingest_from_file <- function(database, src, dest_table, streaming_ingest=FALSE, ingestion_token=NULL, ...)
+ingest_from_local <- function(database, src, dest_table, method=NULL, ingestion_token=NULL, staging_container=NULL,
+                              ...)
 {
-    if(!streaming_ingest)
-    {
-        # upload to blob and ingest from there
-        if(!requireNamespace("AzureStor"))
-            stop("AzureStor package not available")
+    AzureStor <- requireNamespace(AzureStor)
+    if(is.null(method))
+        method <- if(AzureStor) "indirect" else "streaming"
 
-        stop("not yet implemented")
-    }
-    stop("not yet implemented")
+    switch(as.character(method),
+        indirect=
+            ingest_indirect(database, src, dest_table, staging_container, ...),
+        streaming=
+            ingest_stream(database, src, dest_table, ingestion_token, ...),
+        inline=
+            ingest_inline(database, src, dest_table, ...),
+        stop("Bad ingestion method argument", call.=FALSE)
+    )
 }
 
 
@@ -81,6 +93,24 @@ ingest_from_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, 
     else src <- paste0(src, ";impersonate")
 
     ingest_from_url(database, src, dest_table, async, ...)
+}
+
+
+ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, ...)
+{
+    
+}
+
+
+ingest_indirect <- function(database, src, dest_table, staging_container=NULL, ...)
+{
+
+}
+
+
+ingest_inline <- function(database, src, dest_table, ...)
+{
+
 }
 
 
