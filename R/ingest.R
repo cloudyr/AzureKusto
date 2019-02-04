@@ -138,18 +138,16 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL,
         body <- textConnectionValue(con)
         opts <- utils::modifyList(opts, list(streamFormat="Csv"))
     }
-    else body <- readBin(src, "raw", file.info(src)$size)
+    else body <- readLines(src)
 
     if(is.null(ingestion_token))
         ingestion_token <- get_kusto_token(server=database$ingestion_uri, tenant=database$tenantid)
 
+    ingest_uri <- httr::parse_url(database$ingestion_uri)
     ingest_uri$path <- file.path("v1/rest/ingest", database$database, dest_table)
     ingest_uri$query <- opts
 
-    headers <- list(
-        Authorization=paste("Bearer", validate_token(ingestion_token)),
-        `Content-Length`=sprintf("%.0f", length(body))
-    )
+    headers <- httr::add_headers(Authorization=paste("Bearer", validate_token(ingestion_token)))
 
     res <- httr::POST(ingest_uri, headers, body=body, encode="raw")
 
@@ -169,23 +167,39 @@ ingest_indirect <- function(database, src, dest_table, staging_container=NULL, .
     if(!requireNamespace("AzureStor"))
         stop("AzureStor package must be installed to do indirect ingestion", call.=FALSE)
 
+    opts <- utils::modifyList(list(...), list(
+        key=staging_container$endpoint$key,
+        token=staging_container$endpoint$token,
+        sas=staging_container$endpoint$sas))
+
+    if(is.data.frame(src))
+    {
+        utils::write.table(src, textConnection("con", "w"), row.names=FALSE, col.names=FALSE, sep=",")
+        src <- textConnection(con, "r")
+        opts <- utils::modifyList(opts, list(streamFormat="Csv"))
+    }
+
     if(inherits(staging_container, "blob_container"))
     {
         uploadfunc <- get("upload_blob", getNamespace("AzureStor"))
         uploadfunc(staging_container, src, dest_table)
+
         url <- httr::parse_url(staging_container$endpoint$url)
         url$path <- file.path(staging_container$name, dest_table)
-        ingest_blob(database, httr::build_url(url), dest_table, ...)
+
+        do.call(ingest_blob, c(list(database, httr::build_url(url), dest_table), opts))
     }
     else if(inherits(staging_container, "adls_filesystem"))
     {
         uploadfunc <- get("upload_adls_file", getNamespace("AzureStor"))
         uploadfunc(staging_container, src, dest_table)
+
         url <- httr::parse_url(staging_container$endpoint$url)
         url$scheme <- "abfss"
         url$username <- staging_container$name
         url$path <- dest_table
-        ingest_adls2(database, httr::build_url(url), dest_table, ...)
+
+        do.call(ingest_adls2, c(list(database, httr::build_url(url), dest_table), opts))
     }
     else stop("Unsupported staging container type", call.=FALSE)
 }
