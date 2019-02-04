@@ -22,7 +22,7 @@
 ingest_local <- function(database, src, dest_table, method=NULL, staging_container=NULL, ingestion_token=NULL,
     http_status_handler="stop", ...)
 {
-    AzureStor <- requireNamespace(AzureStor)
+    AzureStor <- requireNamespace("AzureStor")
     if(is.null(method))
         method <- if(AzureStor) "indirect" else "streaming"
 
@@ -125,7 +125,8 @@ ingest_adls1 <- function(database, src, dest_table, async=FALSE, key=NULL, token
 }
 
 
-ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_status_handler="stop", ...)
+ingest_stream <- function(database, src, dest_table, ingestion_token=NULL,
+    http_status_handler=c("stop", "warn", "message", "pass"), ...)
 {
     opts <- list(...)
 
@@ -133,7 +134,7 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
     {
         con <- textConnection(NULL, "w")
         on.exit(close(con))
-        utils::write.csv(src, con, row.names=FALSE, col.names=FALSE)
+        utils::write.table(src, con, row.names=FALSE, col.names=FALSE, sep=",")
         body <- textConnectionValue(con)
         opts <- utils::modifyList(opts, list(streamFormat="Csv"))
     }
@@ -146,6 +147,9 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
     }
     else ingest_uri <- httr::parse_url(database$ingestion_uri)
 
+    if(is.null(ingestion_token))
+        ingestion_token <- get_kusto_token(server=database$ingestion_uri, tenant=database$tenantid)
+
     ingest_uri$path <- file.path("v1/rest/ingest", database$database, dest_table)
     ingest_uri$query <- opts
 
@@ -154,7 +158,7 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL, http_
         `Content-Length`=sprintf("%.0f", length(body))
     )
 
-    res <- httr::POST(ingest_uri, headers, body, encode="raw")
+    res <- httr::POST(ingest_uri, headers, body=body, encode="raw")
 
     http_status_handler <- match.arg(http_status_handler)
     if(http_status_handler == "pass")
