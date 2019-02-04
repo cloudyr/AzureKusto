@@ -17,7 +17,7 @@ kusto_database_endpoint(..., .connection_string = NULL,
 
 \item{.ingestion_token}{Optionally, an AAD token to authenticate with when performing a streaming ingestion. Note that streaming ingestion is currently (February 2019) in beta and must be enabled for a cluster by making a support request.}
 
-\item{.ingestion_uri}{Optionally, the URI to use for streaming ingestion. Defaults to ""}
+\item{.ingestion_uri}{Optionally, the URI endpoint for streaming ingestion. Defaults to the server URI.}
 
 \item{.use_integer64}{For \code{kusto_database_endpoint}, whether to convert columns with Kusto \code{long} datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.}
 }

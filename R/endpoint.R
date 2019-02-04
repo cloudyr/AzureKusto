@@ -4,7 +4,7 @@
 #' @param .connection_string An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in `...` if they overlap.
 #' @param .query_token Optionally, an Azure Active Directory (AAD) token to authenticate with. If this is supplied, it overrides other tokens specified in `...` or in the connection string.
 #' @param .ingestion_token Optionally, an AAD token to authenticate with when performing a streaming ingestion. Note that streaming ingestion is currently (February 2019) in beta and must be enabled for a cluster by making a support request.
-#' @param .ingestion_uri Optionally, the URI to use for streaming ingestion. Defaults to ""
+#' @param .ingestion_uri Optionally, the URI endpoint for streaming ingestion. Defaults to the server URI.
 #' @param .use_integer64 For `kusto_database_endpoint`, whether to convert columns with Kusto `long` datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.
 #'
 #' @details
@@ -93,7 +93,9 @@ kusto_database_endpoint <- function(..., .connection_string=NULL,
     props <- check_endpoint_properties(props)
 
     props$ingestion_token <- .ingestion_token
-    props$ingestion_uri <- .ingestion_uri
+    props$ingestion_uri <- if(!is.null(.ingestion_uri))
+        .ingestion_uri
+    else props$server
 
     class(props) <- "kusto_database_endpoint"
     props

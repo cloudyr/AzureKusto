@@ -140,13 +140,6 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL,
     }
     else body <- readBin(src, "raw", file.info(src)$size)
 
-    if(is.null(database$ingestion_uri))
-    {
-        ingest_uri <- httr::parse_url(database$server)
-        ingest_uri$hostname <- paste0("ingest-", ingest_uri$hostname)
-    }
-    else ingest_uri <- httr::parse_url(database$ingestion_uri)
-
     if(is.null(ingestion_token))
         ingestion_token <- get_kusto_token(server=database$ingestion_uri, tenant=database$tenantid)
 
