@@ -5,6 +5,7 @@
 \alias{ingest_url}
 \alias{ingest_blob}
 \alias{ingest_adls2}
+\alias{ingest_adls1}
 \title{Ingestion functions for Kusto}
 \usage{
 ingest_local(database, src, dest_table, method = NULL,
@@ -17,6 +18,9 @@ ingest_blob(database, src, dest_table, async = FALSE, key = NULL,
   token = NULL, sas = NULL, ...)
 
 ingest_adls2(database, src, dest_table, async = FALSE, key = NULL,
+  token = NULL, sas = NULL, ...)
+
+ingest_adls1(database, src, dest_table, async = FALSE, key = NULL,
   token = NULL, sas = NULL, ...)
 }
 \arguments{

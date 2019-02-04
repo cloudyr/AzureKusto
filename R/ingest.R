@@ -84,6 +84,8 @@ ingest_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token
         src_uri$path <- sub("^[^/]+/", "", src_uri$path)
         src <- httr::build_url(src_uri)
     }
+    else if(src_uri$scheme == "adl")
+        stop("ADLSgen2 URIs do not use the adl: scheme; did you mean to call ingest_adls1()?", call.=FALSE)
 
     if(!is.null(key))
         src <- paste0(src, ";", key)
@@ -92,6 +94,32 @@ ingest_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token
     else if(!is.null(sas))
         stop("ADLSgen2 does not support use of shared access signatures", call.=FALSE)
     else src <- paste0(src, ";impersonate")
+
+    ingest_url(database, src, dest_table, async, ...)
+}
+
+
+#' @rdname ingest
+#' @export
+ingest_adls1 <- function(database, src, dest_table, async=FALSE, key=NULL, token=NULL, sas=NULL, ...)
+{
+    # convert https URI into adl for Kusto
+    src_uri <- httr::parse_url(src)
+    if(grepl("^http", src_uri$scheme))
+    {
+        warning("ADLSgen1 URIs should use the adl: scheme; did you mean to call ingest_adls2()?")
+        src_uri$scheme <- "adl"
+        src <- httr::build_url(src_uri)
+    }
+    else if(src_uri$scheme == "abfss")
+        stop("ADLSgen1 URIs do not use the abfss: scheme; did you mean to call ingest_adls2()?", call.=FALSE)
+    
+    if(!is.null(key))
+        stop("ADLSgen1 does not use shared keys; did you mean to call ingest_adls2()?", call.=FALSE)
+    else if(!is.null(token))
+        src <- paste0(src, ";token=", validate_token(token))
+    else if(!is.null(sas))
+        stop("ADLSgen1 does not support use of shared access signatures", call.=FALSE)
 
     ingest_url(database, src, dest_table, async, ...)
 }
