@@ -139,7 +139,7 @@ ingest_streaming <- function(database, src, dest_table, ingestion_token=database
         opts <- utils::modifyList(opts, list(streamFormat="Csv"))
     }
     else body <- readLines(src)
-    print(body)
+
     ingest_uri <- httr::parse_url(database$server)
     ingest_uri$path <- file.path("v1/rest/ingest", database$database, dest_table)
     ingest_uri$query <- opts
