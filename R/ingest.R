@@ -62,7 +62,7 @@ ingest_blob <- function(database, src, dest_table, async=FALSE, key=NULL, token=
     if(!is.null(key))
         src <- paste0(src, ";", key)
     else if(!is.null(token))
-        src <- paste0(src, ";token=", validate_token(token))
+        stop("Kusto does not support authenticating to blob storage with a token", call.=FALSE)
     else if(!is.null(sas))
         src <- paste0(src, "?", sas)
 
@@ -90,7 +90,7 @@ ingest_adls2 <- function(database, src, dest_table, async=FALSE, key=NULL, token
     else if(!is.null(token))
         src <- paste0(src, ";token=", validate_token(token))
     else if(!is.null(sas))
-        stop("ADLSgen2 does not support use of shared access signatures")
+        stop("ADLSgen2 does not support use of shared access signatures", call.=FALSE)
     else src <- paste0(src, ";impersonate")
 
     ingest_url(database, src, dest_table, async, ...)
