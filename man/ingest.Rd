@@ -9,7 +9,7 @@
 \title{Ingestion functions for Kusto}
 \usage{
 ingest_local(database, src, dest_table, method = NULL,
-  staging_container = NULL, ingestion_token = NULL,
+  staging_container = NULL, ingestion_token = database$token,
   http_status_handler = "stop", ...)
 
 ingest_url(database, src, dest_table, async = FALSE, ...)
@@ -34,7 +34,7 @@ ingest_adls1(database, src, dest_table, async = FALSE, key = NULL,
 
 \item{staging_container}{For local ingestion, an Azure storage container to use for staging the dataset. This can be an object of class either \link[AzureStor:blob_container]{AzureStor::blob_container} or \link[AzureStor:adls_filesystem]{AzureStor::adls_filesystem}. Only used if \code{method="indirect"}.}
 
-\item{ingestion_token}{For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if \code{method="streaming"}.}
+\item{ingestion_token}{For local ingestion, an Azure Active Directory authentication token for the cluster ingestion endpoint. Only used if \code{method="streaming"}.}
 
 \item{http_status_handler}{For local ingestion, how to handle HTTP conditions >= 300. Defaults to "stop"; alternatives are "warn", "message" and "pass". The last option will pass through the raw response object from the server unchanged, regardless of the status code. This is mostly useful for debugging purposes, or if you want to see what the Kusto REST API does. Only used if \code{method="streaming"}.}
 

@@ -5,8 +5,7 @@
 \title{Endpoints for communicating with a Kusto database}
 \usage{
 kusto_database_endpoint(..., .connection_string = NULL,
-  .query_token = NULL, .ingestion_token = NULL,
-  .ingestion_uri = NULL, .use_integer64 = FALSE)
+  .query_token = NULL, .use_integer64 = FALSE)
 }
 \arguments{
 \item{...}{Named arguments which are the properties for the endpoint object. See 'Details' below for the properties that AzureKusto recognises.}
@@ -14,10 +13,6 @@ kusto_database_endpoint(..., .connection_string = NULL,
 \item{.connection_string}{An alternative way of specifying the properties, as a database connection string. Properties supplied here override those in \code{...} if they overlap.}
 
 \item{.query_token}{Optionally, an Azure Active Directory (AAD) token to authenticate with. If this is supplied, it overrides other tokens specified in \code{...} or in the connection string.}
-
-\item{.ingestion_token}{Optionally, an AAD token to authenticate with when performing a streaming ingestion. Note that streaming ingestion is currently (February 2019) in beta and must be enabled for a cluster by making a support request.}
-
-\item{.ingestion_uri}{Optionally, the URI endpoint for streaming ingestion. Defaults to the server URI.}
 
 \item{.use_integer64}{For \code{kusto_database_endpoint}, whether to convert columns with Kusto \code{long} datatype into 64-bit integers in R, using the bit64 package. If FALSE, represent them as numeric instead.}
 }

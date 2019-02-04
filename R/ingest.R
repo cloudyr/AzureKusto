@@ -5,7 +5,7 @@
 #' @param dest_table The name of the destination table.
 #' @param method For local ingestion, the method to use. See 'Details' below.
 #' @param staging_container For local ingestion, an Azure storage container to use for staging the dataset. This can be an object of class either [AzureStor::blob_container] or [AzureStor::adls_filesystem]. Only used if `method="indirect"`.
-#' @param ingestion_token For local ingestion, an authentication token for the cluster ingestion endpoint. Only used if `method="streaming"`.
+#' @param ingestion_token For local ingestion, an Azure Active Directory authentication token for the cluster ingestion endpoint. Only used if `method="streaming"`.
 #' @param http_status_handler For local ingestion, how to handle HTTP conditions >= 300. Defaults to "stop"; alternatives are "warn", "message" and "pass". The last option will pass through the raw response object from the server unchanged, regardless of the status code. This is mostly useful for debugging purposes, or if you want to see what the Kusto REST API does. Only used if `method="streaming"`.
 #' @param key,token,sas Authentication arguments for the Azure storage ingestion methods. If multiple arguments are supplied, a key takes priority over a token, which takes priority over a SAS. Note that these arguments are for authenticating with the Azure _storage account_, as opposed to Kusto itself.
 #' @param async For the URL ingestion functions, whether to do the ingestion asychronously. If TRUE, the function will return immediately while the server handles the operation in the background.
@@ -19,8 +19,8 @@
 #'
 #' @rdname ingest
 #' @export
-ingest_local <- function(database, src, dest_table, method=NULL, staging_container=NULL, ingestion_token=NULL,
-    http_status_handler="stop", ...)
+ingest_local <- function(database, src, dest_table, method=NULL, staging_container=NULL,
+    ingestion_token=database$token, http_status_handler="stop", ...)
 {
     AzureStor <- requireNamespace("AzureStor")
     if(is.null(method))
@@ -30,7 +30,7 @@ ingest_local <- function(database, src, dest_table, method=NULL, staging_contain
         indirect=
             ingest_indirect(database, src, dest_table, staging_container, ...),
         streaming=
-            ingest_stream(database, src, dest_table, ingestion_token, http_status_handler, ...),
+            ingest_streaming(database, src, dest_table, ingestion_token, http_status_handler, ...),
         inline=
             ingest_inline(database, src, dest_table, ...),
         stop("Bad ingestion method argument", call.=FALSE)
@@ -125,7 +125,7 @@ ingest_adls1 <- function(database, src, dest_table, async=FALSE, key=NULL, token
 }
 
 
-ingest_stream <- function(database, src, dest_table, ingestion_token=NULL,
+ingest_streaming <- function(database, src, dest_table, ingestion_token=database$token,
     http_status_handler=c("stop", "warn", "message", "pass"), ...)
 {
     opts <- list(...)
@@ -139,11 +139,8 @@ ingest_stream <- function(database, src, dest_table, ingestion_token=NULL,
         opts <- utils::modifyList(opts, list(streamFormat="Csv"))
     }
     else body <- readLines(src)
-
-    if(is.null(ingestion_token))
-        ingestion_token <- get_kusto_token(server=database$ingestion_uri, tenant=database$tenantid)
-
-    ingest_uri <- httr::parse_url(database$ingestion_uri)
+    print(body)
+    ingest_uri <- httr::parse_url(database$server)
     ingest_uri$path <- file.path("v1/rest/ingest", database$database, dest_table)
     ingest_uri$query <- opts
 
