@@ -51,7 +51,7 @@ ingest_url <- function(database, src, dest_table, async=FALSE, ...)
         "(", obfuscate_string(src), ")",
         prop_list)
 
-    invisible(run_query(database, cmd))
+    run_query(database, cmd)
 }
 
 
