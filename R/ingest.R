@@ -47,7 +47,7 @@ ingest_url <- function(database, src, dest_table, async=FALSE, ...)
     cmd <- paste(".ingest",
         if(async) "async" else NULL,
         "into table",
-        dest_table,
+        escape(ident(dest_table)),
         "(", obfuscate_string(src), ")",
         prop_list)
 
@@ -216,10 +216,10 @@ ingest_inline <- function(database, src, dest_table, ...)
     else records <- readLines(src)
 
     cmd <- paste(".ingest inline into table",
-        dest_table,
+        escape(ident(dest_table)),
         prop_list,
         "<|\n",
-        paste0(records, collapse="\n"))
+        paste0(sapply(records, escape), collapse="\n"))
 
     invisible(run_query(database, cmd))
 }
@@ -227,7 +227,7 @@ ingest_inline <- function(database, src, dest_table, ...)
 
 obfuscate_string <- function(string)
 {
-    paste0("h'", string, "'")
+    paste0("h", escape(string))
 }
 
 
@@ -239,11 +239,7 @@ get_ingestion_properties <- function(...)
 
     prop_list <- mapply(function(name, value)
     {
-        if(is.character(value))
-            value <- shQuote(value, type="sh")
-        else if(is.logical(value))
-            value <- tolower(as.character(value))
-        paste(name, value, sep="=")
+        paste(name, escape(value), sep="=")
     }, names(props), props)
 
     paste("with (", paste(prop_list, collapse=", "), ")")
