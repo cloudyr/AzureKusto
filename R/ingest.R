@@ -210,7 +210,7 @@ ingest_inline <- function(database, src, dest_table, ...)
     {
         con <- textConnection(NULL, "w")
         on.exit(close(con))
-        utils::write.csv(src, con, row.names=FALSE, col.names=FALSE)
+        utils::write.table(src, con, row.names=FALSE, col.names=FALSE, sep=",")
         records <- textConnectionValue(con)
     }
     else records <- readLines(src)
