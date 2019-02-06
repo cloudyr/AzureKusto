@@ -219,7 +219,7 @@ ingest_inline <- function(database, src, dest_table, ...)
         escape(ident(dest_table)),
         prop_list,
         "<|\n",
-        paste0(sapply(records, escape), collapse="\n"))
+        paste0(records, collapse="\n"))
 
     invisible(run_query(database, cmd))
 }
