@@ -10,7 +10,7 @@
 #'
 #' General properties:
 #' - server: The URI of the server, usually of the form 'https://{clustername}.{location}.kusto.windows.net'.
-#'   * addr, address, network address, datasource
+#'   * addr, address, network address, datasource, host
 #' - database: The database.
 #'   * initialcatalog
 #' - tenantid: The AAD tenant name or ID to authenticate with.
@@ -100,7 +100,7 @@ normalize_connstring_properties <- function(properties)
     property_list <- list(
         # general properties
         traceclientversion="traceclientversion",
-        server=c("server", "addr", "address", "network address", "datasource"),
+        server=c("server", "addr", "address", "network address", "datasource", "host"),
         database=c("database", "initialcatalog"),
         tenantid=c("tenantid", "authority"),
         queryconsistency="queryconsistency",
