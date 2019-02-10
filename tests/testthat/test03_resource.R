@@ -14,7 +14,7 @@ if(username == "")
 
 srvloc <- Sys.getenv("AZ_TEST_KUSTO_NEW_LOCATION")
 if(srvloc == "")
-    stop("Resource creation tests skipped: no location set")
+    skip("Resource creation tests skipped: no location set")
 
 
 sub <- AzureRMR::az_rm$new(tenant=tenant, app=app, password=password)$get_subscription(subscription)
@@ -40,7 +40,7 @@ test_that("Cluster creation works",
 
     default_tenant <- srv$get_default_tenant()
     expect_type(default_tenant, "character")
-    expect_true(AzureRMR::normalize_tenant(tenant) == default_tenant)
+    expect_true(AzureAuth::normalize_tenant(tenant) == default_tenant)
 
     db <- srv$create_database("db")
     expect_true(is_kusto_database(db))
