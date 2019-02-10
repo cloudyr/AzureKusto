@@ -2,12 +2,17 @@
 
 setOldClass("kusto_database_endpoint")
 
+#' @keywords internal
 #' @export
 setClass("AzureKustoDriver", contains="DBIDriver")
 
+#' Azure Kusto connection class
+#'
+#' @keywords internal
 #' @export
-setClass("AzureKustoConnection",
-         contains=c("DBIConnection", "kusto_database_endpoint"))
+setClass("AzureKustoConnection", contains="DBIConnection", slots=list(
+    endpoint="kusto_database_endpoint"
+))
 
 #' @export
 setClass("AzureKustoResult", contains="DBIResult")
@@ -26,21 +31,25 @@ setMethod("show", "AzureKustoDriver", function(object){
     invisible(object)
 })
 
+#' @export
 AzureKusto <- function()
 {
     new("AzureKustoDriver")
 }
 
-#' @export
 #' @examples
 #' \dontrun{
-#' db <- dbConnect(AzureKusto::AzureKusto())
+#' db <- dbConnect(AzureKusto::AzureKusto(),
+#'                 server="https://mycluster.location.kusto.windows.net", database="database"...)
 #' dbWriteTable(db, "mtcars", mtcars)
 #' dbGetQuery(db, "mtcars | where cyl == 4")
 #' }
+#' @rdname AzureKusto
+#' @export
 setMethod("dbConnect", "AzureKustoDriver", function(drv, ...)
 {
-    new("AzureKustoConnection", host=host, ...)
+    endpoint <- kusto_database_endpoint(...)
+    new("AzureKustoConnection", endpoint=endpoint)
 })
 
 #' @export
@@ -50,18 +59,3 @@ setMethod("dbSendQuery", "AzureKustoConnection", function(conn, statement, ...)
     new("AzureKustoResult", ...)
 })
 
-#' @export
-setMethod("dbClearResult", "AzureKustoResult", function(res, ...)
-{
-})
-
-#' Retrieve records from query
-#' @export
-setMethod("dbFetch", "AzureKustoResult", function(res, n = -1, ...)
-{
-})
-
-#' @export
-setMethod("dbHasCompleted", "AzureKustoResult", function(res, ...)
-{
-})
