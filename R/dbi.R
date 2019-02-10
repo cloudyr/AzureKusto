@@ -15,6 +15,11 @@ setClass("AzureKustoConnection", contains="DBIConnection", slots=list(
 ))
 
 
+#' @export
+setClass("AzureKustoResult", contains="DBIResult", slots=list(
+    data="data.frame"
+))
+
 
 ## methods
 
@@ -52,9 +57,38 @@ setMethod("dbConnect", "AzureKustoDriver", function(drv, ...)
 
 
 #' @export
-setMethod("dbGetQuery", c(conn="AzureKustoConnection", statement="character"), function(conn, statement, ...)
+setMethod("dbGetQuery", c("AzureKustoConnection", "character"), function(conn, statement, ...)
 {
     run_query(conn@endpoint, statement, ...)
+})
+
+
+#' @export
+setMethod("dbSendQuery", "AzureKustoConnection", function(conn, statement, ...)
+{
+    res <- run_query(conn@endpoint, statement, ...)
+    new("AzureKustoResult", data=res)
+})
+
+
+#' @export
+setMethod("dbFetch", "AzureKustoResult", function(res, n=-1, ...)
+{
+    res@data
+})
+
+
+#' @export
+setMethod("dbReadTable", c("AzureKustoConnection", "character"), function(conn, name, ...)
+{
+    run_query(conn@endpoint, escape(ident(name)))
+})
+
+
+#' @export
+setMethod("dbListTables", "AzureKustoConnection", function(conn, ...)
+{
+    run_query(conn@endpoint, ".show tables")
 })
 
 
@@ -100,5 +134,40 @@ setMethod("dbRemoveTable", "AzureKustoConnection", function(conn, name, ...)
 {
     cmd <- paste(".drop table", escape(ident(name)))
     run_query(conn@endpoint, cmd)
+})
+
+
+#' @export
+setMethod("dbExistsTable", "AzureKustoConnection", function(conn, name, ...)
+{
+    tables <- run_query(conn@endpoint, ".show tables")
+    name %in% tables$TableName
+})
+
+
+#' @export
+setMethod("dbSendStatement", "AzureKustoConnection", function(conn, statement, ...)
+{
+    if(substr(statement, 1, 1) != ".")
+        stop("dbSendStatement is for control commands only", call.=FALSE)
+    res <- run_query(conn@endpoint, statement, ...)
+    new("AzureKustoResult", data=res)
+})
+
+
+#' @export
+setMethod("dbListFields", c("AzureKustoConnection", "character"), function(conn, name, ...)
+{
+    cmd <- paste(".show table", escape(ident(name)))
+    res <- run_query(conn@endpoint, cmd)
+    res[[1]]
+})
+
+
+#' @export
+setMethod("dbColumnInfo", "AzureKustoResult", function(res, ...)
+{
+    types <- sapply(res@data, function(x) class(x)[1])
+    data.frame(names=names(types), types=types, stringsAsFactors=FALSE, row.names=NULL)
 })
 
