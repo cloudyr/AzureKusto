@@ -43,7 +43,7 @@ run_query <- function(database, qry_cmd, ..., .http_status_handler="stop")
 }
 
 
-get_param_types <- function(query_params)
+build_param_list <- function(query_params)
 {
     ps <- mapply(function(name, value)
     {
@@ -83,7 +83,7 @@ build_request_body <- function(db, qry_cmd, query_options=list(), query_paramete
     {
         body$csl <- paste(
             "declare query_parameters",
-            get_param_types(query_parameters),
+            build_param_list(query_parameters),
             ";",
             body$csl)
         body$properties$Parameters <- query_parameters   

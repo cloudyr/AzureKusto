@@ -7,7 +7,7 @@ test_that("Query parameter types can be assigned appropriately",
         baz=FALSE,
         quux=1.1,
         dt=as.Date('2019-01-01'))
-    types <- AzureKusto:::get_param_types(params)
+    types <- AzureKusto:::build_param_list(params)
     expect_equal(
         types,
         "(foo:string, bar:int, baz:bool, quux:real, dt:datetime)")
