@@ -354,3 +354,43 @@ test_that("union_all translates correctly",
     expect_equal(q_str, kql("database('local_df').iris\n| union kind = outer (database('local_df').iris)"))
 
 })
+
+test_that("as.Date() produces a Kusto datetime", {
+    
+    dates <- c("2019-01-01", "2019-01-02", "2019-01-03")
+    dates <- as.Date(dates)
+    words <- c("Tuesday", "Wednesday", "Thursday")
+    df <- data.frame(dates, words)
+
+    tbl_dates <- tbl_kusto_abstract(df, "df", src=simulate_kusto())
+
+    q <- tbl_dates %>%
+        filter(dates == as.Date("2019-01-01"))
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').df\n| where dates == make_datetime('2019-01-01')"))
+    
+})
+
+test_that("as.POSIXct() produces a Kusto datetime", {
+    
+    dates <- c("2019-01-01T01:00:00Z", "2019-01-02", "2019-01-03")
+    dates <- as.POSIXct(strptime(dates, "%Y-%m-%dT%H:%M%z"))
+    words <- c("Tuesday", "Wednesday", "Thursday")
+    df <- data.frame(dates, words)
+
+    tbl_dates <- tbl_kusto_abstract(df, "df", src=simulate_kusto())
+
+    q <- tbl_dates %>%
+        filter(dates == as.Date("2019-01-01"))
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').df\n| where dates == datetime('2019-01-01')"))
+    
+})
+
+test_that("variables from enclosing environment are passed to filter()", {
+    
+})

@@ -335,6 +335,11 @@ base_scalar <- kql_translator(
     as.double = kql_prefix("todouble", 1),
     as.integer = kql_prefix("toint", 1),
     as.character = kql_prefix("tostring", 1),
+    as.Date = kql_prefix("datetime", 1),
+    as.POSIXct = kql_prefix("datetime", 1),
+    strptime = function(dt_str, format_str) {
+        kql_prefix("datetime", 1)(dt_str)
+    },
 
     c = function(...) c(...),
     `:` = function(from, to) from:to,
