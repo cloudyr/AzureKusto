@@ -37,9 +37,11 @@ run_query <- function(database, qry_cmd, ..., .http_status_handler="stop")
     auth_str <- build_auth_str(token, user, password)
     result <- call_kusto(uri, body, auth_str, http_status_handler=.http_status_handler)
 
-    if(is_cmd)
+    res <- if(is_cmd)
         parse_command_result(result, database$use_integer64)
     else parse_query_result(result, database$use_integer64)
+
+    as.data.frame(res)
 }
 
 
