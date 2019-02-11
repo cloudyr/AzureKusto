@@ -3,8 +3,8 @@
 \docType{class}
 \name{AzureKustoConnection-class}
 \alias{AzureKustoConnection-class}
-\title{Azure Kusto connection class}
+\title{Kusto DBI connection class}
 \description{
-Azure Kusto connection class
+Kusto DBI connection class
 }
 \keyword{internal}

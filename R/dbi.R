@@ -9,7 +9,8 @@ setOldClass("kusto_database_endpoint")
 #' @export
 setClass("AzureKustoDriver", contains="DBIDriver")
 
-#' Azure Kusto connection class
+
+#' Kusto DBI connection class
 #'
 #' @keywords internal
 #' @export
@@ -130,6 +131,8 @@ setMethod("dbCanConnect", "AzureKustoDriver", function(drv, ...)
 #' @export
 setMethod("dbReadTable", c("AzureKustoConnection", "character"), function(conn, name, ...)
 {
+    if(!dbi_validate_table_name(name))
+        stop("Must provide a table name, not an expression")
     run_query(conn@endpoint, escape(ident(name)))
 })
 
@@ -138,6 +141,9 @@ setMethod("dbReadTable", c("AzureKustoConnection", "character"), function(conn, 
 #' @export
 setMethod("dbWriteTable", "AzureKustoConnection", function(conn, name, value, method, ...)
 {
+    if(!dbi_validate_table_name(name))
+        stop("Must provide a table name, not an expression")
+
     if(!dbExistsTable(conn, name))
         dbCreateTable(conn, name, value)
 
@@ -176,7 +182,12 @@ setMethod("dbCreateTable", "AzureKustoConnection", function(conn, name, fields, 
     }
 
     stopifnot(is.null(row.names))
-    stopifnot(temporary == FALSE)
+    if(temporary)
+        stop("Kusto does not have temporary tables")
+
+    if(!dbi_validate_table_name(name))
+        stop("Must provide a table name, not an expression")
+
     cmd <- paste(".create table",
         escape(ident(name)),
         build_fields())
@@ -188,6 +199,9 @@ setMethod("dbCreateTable", "AzureKustoConnection", function(conn, name, fields, 
 #' @export
 setMethod("dbRemoveTable", "AzureKustoConnection", function(conn, name, ...)
 {
+    if(!dbi_validate_table_name(name))
+        stop("Must provide a table name, not an expression")
+
     cmd <- paste(".drop table", escape(ident(name)))
     run_query(conn@endpoint, cmd)
 })
@@ -206,6 +220,9 @@ setMethod("dbListTables", "AzureKustoConnection", function(conn, ...)
 #' @export
 setMethod("dbExistsTable", "AzureKustoConnection", function(conn, name, ...)
 {
+    if(!dbi_validate_table_name(name))
+        stop("Must provide a table name, not an expression")
+
     name %in% dbListTables(conn)
 })
 
@@ -275,7 +292,6 @@ setMethod("dbFetch", "AzureKustoResult", function(res, ...)
 })
 
 
-
 #' @rdname DBI_query
 #' @export
 setMethod("dbSendStatement", c("AzureKustoConnection", "character"), function(conn, statement, ...)
@@ -315,3 +331,9 @@ setMethod("dbColumnInfo", "AzureKustoResult", function(res, ...)
     data.frame(names=names(types), types=types, stringsAsFactors=FALSE, row.names=NULL)
 })
 
+
+# helper function for dbXxxTable functions: check that argument is a name, not an expr
+dbi_validate_table_name <- function(string)
+{
+    grepl("^[_a-zA-Z][_a-zA-Z0-9]*$", string)
+}

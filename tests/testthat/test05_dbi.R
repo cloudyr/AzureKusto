@@ -45,7 +45,12 @@ test_that("DBI table functions work",
     expect_equal(nrow(ir), 150)
     expect_equal(ncol(ir), 5)
 
-    # don't test table creation: Kusto has unpredictable lags
+    # fail on non-table input arg
+    expect_error(DBI::dbExistsTable(dbi, "not a name"))
+    expect_error(DBI::dbReadTable(dbi, "not a name"))
+    expect_error(DBI::dbWriteTable(dbi, "not a name"))
+
+    # don't test table creation/insertion: Kusto has unpredictable lags
 })
 
 
