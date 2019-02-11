@@ -317,6 +317,9 @@ setMethod("dbExecute", c("AzureKustoConnection", "character"), function(conn, st
 #' @export
 setMethod("dbListFields", c("AzureKustoConnection", "character"), function(conn, name, ...)
 {
+    if(!dbi_validate_table_name(name))
+        stop("Must provide a table name, not an expression")
+
     cmd <- paste(".show table", escape(ident(name)))
     res <- run_query(conn@endpoint, cmd)
     res[[1]]
