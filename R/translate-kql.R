@@ -38,10 +38,8 @@ kql_mask <- function(expr, variant)
 
     # Existing symbols in expression
     names <- all_names(expr)
-    name_env <- ceply(
-        names, function(x) escape(ident(x)),
-        parent = special_calls2
-    )
+    idents <- lapply(names, ident)
+    name_env <- ceply(idents, escape, parent = special_calls2)
 
     # Known kql expressions
     symbol_env <- env_clone(base_symbols, parent = name_env)

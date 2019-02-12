@@ -64,8 +64,29 @@ test_that("filter errors on missing symbols",
     q <- tbl_iris %>%
         dplyr::filter(Speciess == "setosa")
 
-    expect_error(show_query(q), "Unknown column `Speciess` ")
-    #expect_error(show_query(q), "object 'Speciess' not found")
+    expect_error(show_query(q), "Unknown column `Speciess`")
+})
+
+test_that("variables from enclosing environment are passed to filter()",
+{
+    sepal_length_limit <- 2.5
+    q <- tbl_iris %>%
+        dplyr::filter(SepalLength <= sepal_length_limit)
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').iris\n| where SepalLength <= 2.5"))
+})
+
+test_that("variables from enclosing environment are passed to mutate()",
+{
+    sepal_length_limit <- 2.5
+    q <- tbl_iris %>%
+        dplyr::mutate(SepalLengthLimit = sepal_length_limit)
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').iris\n| extend SepalLengthLimit = 2.5"))
 })
 
 test_that("select and filter can be combined",
@@ -355,7 +376,8 @@ test_that("union_all translates correctly",
 
 })
 
-test_that("as.Date() produces a Kusto datetime", {
+test_that("as.Date() produces a Kusto datetime",
+{
     
     dates <- c("2019-01-01", "2019-01-02", "2019-01-03")
     dates <- as.Date(dates)
@@ -373,7 +395,8 @@ test_that("as.Date() produces a Kusto datetime", {
     
 })
 
-test_that("as.POSIXct() produces a Kusto datetime", {
+test_that("as.POSIXct() produces a Kusto datetime",
+{
     
     dates <- c("2019-01-01T23:59:59", "2019-01-02T23:59:58", "2019-01-03T00:00:00")
     dates <- as.POSIXct(strptime(dates, "%Y-%m-%dT%H:%M:%S", tz="UTC"))
@@ -391,7 +414,8 @@ test_that("as.POSIXct() produces a Kusto datetime", {
     
 })
 
-test_that("as.POSIXlt() produces a Kusto datetime", {
+test_that("as.POSIXlt() produces a Kusto datetime",
+{
     
     dates <- c("2019-01-01", "2019-01-02", "2019-01-03")
     dates <- as.POSIXlt(dates)
@@ -406,9 +430,5 @@ test_that("as.POSIXlt() produces a Kusto datetime", {
     q_str <- show_query(q)
 
     expect_equal(q_str, kql("database('local_df').df\n| where dates == todatetime('2019-01-01')"))
-    
-})
-
-test_that("variables from enclosing environment are passed to filter()", {
     
 })
