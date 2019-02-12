@@ -51,11 +51,17 @@ AzureKusto <- function()
 #' @param drv An AzureKusto DBI driver object, instantiated with `AzureKusto()`.
 #' @param ... Authentication arguments supplied to `kusto_database_endpoint`.
 #' @param bigint How to treat Kusto long integer columns. By default, they will be converted to R numeric variables. If this is "integer64", they will be converted to `integer64` variables using the bit64 package.
+#' @param conn For `dbDisconnect`, an AzureKustoConnection object obtained with `dbConnect`.
+#'
+#' @details
+#' Kusto is connectionless, so `dbConnect` simply wraps a database endpoint object, generated with `kusto_database_endpoint(...)`. The endpoint itself can be accessed via the `@endpoint` slot. Similarly, `dbDisconnect` always returns TRUE.
 #'
 #' @return
-#' `dbConnect` returns an object of class AzureKustoConnection. This is simply a wrapper for a Kusto database endpoint, generated with `kusto_database_endpoint(...)`. The endpoint itself can be accessed via the `@endpoint` slot.
+#' For `dbConnect`, an object of class AzureKustoConnection.
 #'
-#' `dbCanConnect` returns TRUE if authenticating with the Kusto server succeeded with the given arguments, and FALSE otherwise.
+#' For `dbCanConnect`, TRUE if authenticating with the Kusto server succeeded with the given arguments, and FALSE otherwise.
+#'
+#' For `dbDisconnect`, always TRUE, invisibly.
 #'
 #' @seealso
 #' [dbReadTable], [dbWriteTable], [dbGetQuery], [dbSendStatement], [kusto_database_endpoint]
@@ -88,6 +94,13 @@ setMethod("dbCanConnect", "AzureKustoDriver", function(drv, ...)
 {
     res <- try(dbConnect(drv, ...), silent=TRUE)
     !inherits(res, "try-error")
+})
+
+#' @rdname AzureKusto
+#' @export
+setMethod("dbDisconnect", "AzureKustoDriver", function(conn, ...)
+{
+    invisible(TRUE)
 })
 
 

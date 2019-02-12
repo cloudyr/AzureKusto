@@ -6,26 +6,39 @@
 \alias{dbConnect,AzureKustoDriver-method}
 \alias{AzureKusto-connection}
 \alias{dbCanConnect,AzureKustoDriver-method}
+\alias{dbDisconnect,AzureKustoDriver-method}
 \title{Connect to a Kusto cluster}
 \usage{
 AzureKusto()
 
-\S4method{dbConnect}{AzureKustoDriver}(drv, ...)
+\S4method{dbConnect}{AzureKustoDriver}(drv, ..., bigint = c("numeric",
+  "integer64"))
 
 \S4method{dbCanConnect}{AzureKustoDriver}(drv, ...)
+
+\S4method{dbDisconnect}{AzureKustoDriver}(conn, ...)
 }
 \arguments{
 \item{drv}{An AzureKusto DBI driver object, instantiated with \code{AzureKusto()}.}
 
 \item{...}{Authentication arguments supplied to \code{kusto_database_endpoint}.}
+
+\item{bigint}{How to treat Kusto long integer columns. By default, they will be converted to R numeric variables. If this is "integer64", they will be converted to \code{integer64} variables using the bit64 package.}
+
+\item{conn}{For \code{dbDisconnect}, an AzureKustoConnection object obtained with \code{dbConnect}.}
 }
 \value{
-\code{dbConnect} returns an object of class AzureKustoConnection. This is simply a wrapper for a Kusto database endpoint, generated with \code{kusto_database_endpoint(...)}. The endpoint itself can be accessed via the \code{@endpoint} slot.
+For \code{dbConnect}, an object of class AzureKustoConnection.
 
-\code{dbCanConnect} returns TRUE if authenticating with the Kusto server succeeded with the given arguments, and FALSE otherwise.
+For \code{dbCanConnect}, TRUE if authenticating with the Kusto server succeeded with the given arguments, and FALSE otherwise.
+
+For \code{dbDisconnect}, always TRUE, invisibly.
 }
 \description{
 Connect to a Kusto cluster
+}
+\details{
+Kusto is connectionless, so \code{dbConnect} simply wraps a database endpoint object, generated with \code{kusto_database_endpoint(...)}. The endpoint itself can be accessed via the \code{@endpoint} slot. Similarly, \code{dbDisconnect} always returns TRUE.
 }
 \examples{
 \dontrun{
