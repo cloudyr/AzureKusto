@@ -41,6 +41,9 @@
 
 \item{temporary}{For \code{dbCreateTable}, whether to create a temporary table. Must be \code{FALSE} for Kusto.}
 }
+\value{
+For \code{dbReadTable}, an in-memory data frame containing the table.
+}
 \description{
 DBI methods for Kusto table management
 }
@@ -48,6 +51,8 @@ DBI methods for Kusto table management
 These functions read, write, create and delete a table, list the tables in a Kusto database, and check for table existence. With the exception of \code{dbWriteTable}, they ultimately call \code{run_query} which does the actual work of communicating with the Kusto server. \code{dbWriteTable} calls \code{ingest_local} to write the data to the server; note that it only supports ingesting a local data frame, as per the DBI spec.
 
 Kusto does not have the concept of temporary tables, so calling \code{dbCreateTable} with \code{temporary} set to anything other than \code{FALSE} will generate an error.
+
+\code{dbReadTable} and \code{dbWriteTable} are likely to be of limited use in practical scenarios, since Kusto tables tend to be much larger than available memory.
 }
 \examples{
 \dontrun{

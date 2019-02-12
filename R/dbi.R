@@ -1,3 +1,25 @@
+#' DBI interface to Kusto
+#'
+#' AzureKusto implements a subset of the DBI specification for interfacing with databases in R. The following methods are supported:
+#' - Connections: [dbConnect], [dbDisconnect], [dbCanConnect]
+#' - Table management: [dbExistsTable], [dbCreateTable], [dbRemoveTable], [dbReadTable], [dbWriteTable]
+#' - Querying: [dbGetQuery], [dbSendQuery], [dbFetch], [dbSendStatement], [dbExecute], [dbListFields], [dbColumnInfo]
+#'
+#' Kusto is quite different to the SQL databases that DBI targets, which affects the behaviour of certain DBI methods and renders other moot.
+#'
+#' - Kusto is connectionless. `dbConnect` simply wraps a database endpoint object, created with [kusto_database_endpoint]. Similarly, `dbDisconnect` always returns TRUE. `dbCanConnect` attempts to check if querying the database will succeed, but this may not be accurate.
+#'
+#' - Temporary tables are not a Kusto concept, so `dbCreateTable(*, temporary=TRUE)` will throw an error.
+#'
+#' - It only supports synchronous queries, with a default timeout of 4 minutes. `dbSendQuery` and `dbSendStatement` will wait for the query to execute, rather than returning immediately. The object returned contains wraps the full result of the query, which `dbFetch` extracts.
+#'
+#' - The Kusto Query Language (KQL) is not SQL, and so higher-level SQL methods are not implemented.
+#'
+#' @name kusto-DBI
+#' @aliases kusto-DBI kusto_dbi AzureKusto_dbi 
+#' @rdname kusto-DBI
+NULL
+
 ## subclasses
 
 setOldClass("kusto_database_endpoint")
@@ -46,7 +68,9 @@ AzureKusto <- function()
 }
 
 
-#' Connect to a Kusto cluster
+#' DBI interface: connect to a Kusto cluster
+#'
+#' Functions to connect to a Kusto cluster.
 #'
 #' @param drv An AzureKusto DBI driver object, instantiated with `AzureKusto()`.
 #' @param ... Authentication arguments supplied to `kusto_database_endpoint`.
@@ -56,6 +80,8 @@ AzureKusto <- function()
 #' @details
 #' Kusto is connectionless, so `dbConnect` simply wraps a database endpoint object, generated with `kusto_database_endpoint(...)`. The endpoint itself can be accessed via the `@endpoint` slot. Similarly, `dbDisconnect` always returns TRUE.
 #'
+#' `dbCanConnect` attempts to detect whether querying the database with the given information and credentials will be successful. The result may not be accurate; essentially all it does is check that its arguments are valid Kusto properties. Ultimately the best way to tell if querying will work is to try it.
+#'
 #' @return
 #' For `dbConnect`, an object of class AzureKustoConnection.
 #'
@@ -64,18 +90,18 @@ AzureKusto <- function()
 #' For `dbDisconnect`, always TRUE, invisibly.
 #'
 #' @seealso
-#' [dbReadTable], [dbWriteTable], [dbGetQuery], [dbSendStatement], [kusto_database_endpoint]
+#' [kusto-DBI], [dbReadTable], [dbWriteTable], [dbGetQuery], [dbSendStatement], [kusto_database_endpoint]
 #'
 #' @examples
 #' \dontrun{
 #' db <- DBI::dbConnect(AzureKusto(),
-#'     server="https://mycluster.location.kusto.windows.net", database="database", tenantid="contoso")
+#'     server="https://mycluster.westus.kusto.windows.net", database="database", tenantid="contoso")
 #'
-#' DBI::dbListTables(db)
+#' DBI::dbDisconnect(db)
 #'
 #' # no authentication credentials: returns FALSE
 #' DBI::dbCanConnect(AzureKusto(),
-#'     server="https://mycluster.location.kusto.windows.net")
+#'     server="https://mycluster.westus.kusto.windows.net")
 #'
 #' }
 #' @aliases AzureKusto-connection
@@ -121,6 +147,11 @@ setMethod("dbDisconnect", "AzureKustoDriver", function(conn, ...)
 #' These functions read, write, create and delete a table, list the tables in a Kusto database, and check for table existence. With the exception of `dbWriteTable`, they ultimately call `run_query` which does the actual work of communicating with the Kusto server. `dbWriteTable` calls `ingest_local` to write the data to the server; note that it only supports ingesting a local data frame, as per the DBI spec.
 #'
 #' Kusto does not have the concept of temporary tables, so calling `dbCreateTable` with `temporary` set to anything other than `FALSE` will generate an error.
+#'
+#' `dbReadTable` and `dbWriteTable` are likely to be of limited use in practical scenarios, since Kusto tables tend to be much larger than available memory.
+#'
+#' @return
+#' For `dbReadTable`, an in-memory data frame containing the table.
 #'
 #' @seealso
 #' [AzureKusto-connection], [dbConnect], [run_query], [ingest_local]

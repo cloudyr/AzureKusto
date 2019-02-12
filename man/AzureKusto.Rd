@@ -7,7 +7,7 @@
 \alias{AzureKusto-connection}
 \alias{dbCanConnect,AzureKustoDriver-method}
 \alias{dbDisconnect,AzureKustoDriver-method}
-\title{Connect to a Kusto cluster}
+\title{DBI interface: connect to a Kusto cluster}
 \usage{
 AzureKusto()
 
@@ -35,24 +35,26 @@ For \code{dbCanConnect}, TRUE if authenticating with the Kusto server succeeded 
 For \code{dbDisconnect}, always TRUE, invisibly.
 }
 \description{
-Connect to a Kusto cluster
+Functions to connect to a Kusto cluster.
 }
 \details{
 Kusto is connectionless, so \code{dbConnect} simply wraps a database endpoint object, generated with \code{kusto_database_endpoint(...)}. The endpoint itself can be accessed via the \code{@endpoint} slot. Similarly, \code{dbDisconnect} always returns TRUE.
+
+\code{dbCanConnect} attempts to detect whether querying the database with the given information and credentials will be successful. The result may not be accurate; essentially all it does is check that its arguments are valid Kusto properties. Ultimately the best way to tell if querying will work is to try it.
 }
 \examples{
 \dontrun{
 db <- DBI::dbConnect(AzureKusto(),
-    server="https://mycluster.location.kusto.windows.net", database="database", tenantid="contoso")
+    server="https://mycluster.westus.kusto.windows.net", database="database", tenantid="contoso")
 
-DBI::dbListTables(db)
+DBI::dbDisconnect(db)
 
 # no authentication credentials: returns FALSE
 DBI::dbCanConnect(AzureKusto(),
-    server="https://mycluster.location.kusto.windows.net")
+    server="https://mycluster.westus.kusto.windows.net")
 
 }
 }
 \seealso{
-\link{dbReadTable}, \link{dbWriteTable}, \link{dbGetQuery}, \link{dbSendStatement}, \link{kusto_database_endpoint}
+\link{kusto-DBI}, \link{dbReadTable}, \link{dbWriteTable}, \link{dbGetQuery}, \link{dbSendStatement}, \link{kusto_database_endpoint}
 }
