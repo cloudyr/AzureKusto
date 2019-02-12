@@ -13,9 +13,12 @@ srvname <- Sys.getenv("AZ_TEST_KUSTO_SERVER")
 srvloc <- Sys.getenv("AZ_TEST_KUSTO_SERVER_LOCATION")
 dbname <- Sys.getenv("AZ_TEST_KUSTO_DATABASE")
 if(srvname == "" || srvloc == "" || dbname == "")
-    skip("Database querying tests skipped: server info not set")
+    skip("DBI tests skipped: server info not set")
 
 server <- sprintf("https://%s.%s.kusto.windows.net", srvname, srvloc)
+
+if(!requireNamespace("bit64"))
+    skip("DBI tests skipped: bit64 package not installed")
 
 
 test_that("DBI connection works",
@@ -83,3 +86,22 @@ test_that("DBI query functions work",
     expect_error(DBI::dbExecute(dbi, "iris | count"))
 })
 
+
+test_that("integer64 support works",
+{
+    drv <- AzureKusto()
+
+    dbi1 <- DBI::dbConnect(drv, host=server, dbname=dbname, tenantid=tenant,
+        appclientid=app, appkey=password, bigint="numeric")
+    expect_s4_class(dbi1, "AzureKustoConnection")
+
+    dbi2 <- DBI::dbConnect(drv, host=server, dbname=dbname, tenantid=tenant,
+        appclientid=app, appkey=password, bigint="integer64")
+    expect_s4_class(dbi2, "AzureKustoConnection")
+
+    df1 <- DBI::dbGetQuery(dbi1, "iris | count")
+    expect_true(is.numeric(df1$Count))
+
+    df2 <- DBI::dbGetQuery(dbi2, "iris | count")
+    expect_true(bit64::is.integer64(df2$Count))
+})

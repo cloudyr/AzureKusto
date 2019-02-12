@@ -50,6 +50,7 @@ AzureKusto <- function()
 #'
 #' @param drv An AzureKusto DBI driver object, instantiated with `AzureKusto()`.
 #' @param ... Authentication arguments supplied to `kusto_database_endpoint`.
+#' @param bigint How to treat Kusto long integer columns. By default, they will be converted to R numeric variables. If this is "integer64", they will be converted to `integer64` variables using the bit64 package.
 #'
 #' @return
 #' `dbConnect` returns an object of class AzureKustoConnection. This is simply a wrapper for a Kusto database endpoint, generated with `kusto_database_endpoint(...)`. The endpoint itself can be accessed via the `@endpoint` slot.
@@ -74,9 +75,10 @@ AzureKusto <- function()
 #' @aliases AzureKusto-connection
 #' @rdname AzureKusto
 #' @export
-setMethod("dbConnect", "AzureKustoDriver", function(drv, ...)
+setMethod("dbConnect", "AzureKustoDriver", function(drv, ..., bigint=c("numeric", "integer64"))
 {
-    endpoint <- kusto_database_endpoint(...)
+    bigint <- match.arg(bigint)
+    endpoint <- kusto_database_endpoint(..., .use_integer64=(bigint == "integer64"))
     new("AzureKustoConnection", endpoint=endpoint)
 })
 
