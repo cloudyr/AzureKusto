@@ -369,25 +369,43 @@ test_that("as.Date() produces a Kusto datetime", {
 
     q_str <- show_query(q)
 
-    expect_equal(q_str, kql("database('local_df').df\n| where dates == make_datetime('2019-01-01')"))
+    expect_equal(q_str, kql("database('local_df').df\n| where dates == todatetime('2019-01-01')"))
     
 })
 
 test_that("as.POSIXct() produces a Kusto datetime", {
     
-    dates <- c("2019-01-01T01:00:00Z", "2019-01-02", "2019-01-03")
-    dates <- as.POSIXct(strptime(dates, "%Y-%m-%dT%H:%M%z"))
+    dates <- c("2019-01-01T23:59:59", "2019-01-02T23:59:58", "2019-01-03T00:00:00")
+    dates <- as.POSIXct(strptime(dates, "%Y-%m-%dT%H:%M:%S", tz="UTC"))
     words <- c("Tuesday", "Wednesday", "Thursday")
     df <- data.frame(dates, words)
 
     tbl_dates <- tbl_kusto_abstract(df, "df", src=simulate_kusto())
 
     q <- tbl_dates %>%
-        filter(dates == as.Date("2019-01-01"))
+        filter(dates == as.POSIXct(strptime("2019-01-01T23:59:59", "%Y-%m-%dT%H:%M:%S", tz="UTC")))
 
     q_str <- show_query(q)
 
-    expect_equal(q_str, kql("database('local_df').df\n| where dates == datetime('2019-01-01')"))
+    expect_equal(q_str, kql("database('local_df').df\n| where dates == todatetime(todatetime('2019-01-01T23:59:59'))"))
+    
+})
+
+test_that("as.POSIXlt() produces a Kusto datetime", {
+    
+    dates <- c("2019-01-01", "2019-01-02", "2019-01-03")
+    dates <- as.POSIXlt(dates)
+    words <- c("Tuesday", "Wednesday", "Thursday")
+    df <- data.frame(dates, words)
+
+    tbl_dates <- tbl_kusto_abstract(df, "df", src=simulate_kusto())
+
+    q <- tbl_dates %>%
+        filter(dates == as.POSIXlt("2019-01-01"))
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').df\n| where dates == todatetime('2019-01-01')"))
     
 })
 
