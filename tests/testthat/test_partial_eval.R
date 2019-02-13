@@ -1,6 +1,6 @@
 context("test partial eval")
 
-test_that("namespace operators always evaluated lffocally",
+test_that("namespace operators always evaluated locally",
 {
     expect_equal(partial_eval(quote(base::sum(1, 2))), 3)
     expect_equal(partial_eval(quote(base:::sum(1, 2))), 3)
