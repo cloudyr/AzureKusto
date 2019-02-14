@@ -190,7 +190,7 @@ kql_escape_string <- function(x)
 #' @export
 kql_escape_ident <- function(x)
 {
-    x
+    paste0("[", kql_escape_string(x), "]")
 }
 
 #' Escape a Kusto logical value.
