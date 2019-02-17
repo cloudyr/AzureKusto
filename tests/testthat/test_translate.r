@@ -173,7 +173,7 @@ test_that("group_by() followed by ungroup() followed by summarize() generates su
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize MaxSepalLength = max(['SepalLength']) by ['Species']\n| summarize MeanOfMaxSepalLength = avg(['MaxSepalLength'])")) # FIXME
+    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize MaxSepalLength = max(['SepalLength']) by ['Species']\n| summarize MeanOfMaxSepalLength = avg(['MaxSepalLength'])"))
 })
 
 test_that("group_by() followed by mutate() partitions the mutation by the grouping variables",
