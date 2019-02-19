@@ -266,115 +266,115 @@ right2 <- tbl_kusto_abstract(right2, "iris2", src = simulate_kusto())
 
 right3 <- tbl_kusto_abstract(right3, "iris3", src = simulate_kusto())
 
-# test_that("inner_join() on a single column translates correctly",
-# {
+test_that("inner_join() on a single column translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::inner_join(right, by = c("Species"))
+    q <- left %>%
+        dplyr::inner_join(right, by = c("Species"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) on ['Species']"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) on ['Species']"))
+})
 
-# test_that("inner_join() on two columns translates correctly",
-# {
-#     q <- left %>%
-#         dplyr::inner_join(right2, by = c("Species", "SepalWidth"))
+test_that("inner_join() on two columns translates correctly",
+{
+    q <- left %>%
+        dplyr::inner_join(right2, by = c("Species", "SepalWidth"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) on ['Species'], ['SepalWidth']"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) on ['Species'], ['SepalWidth']"))
+})
 
-# test_that("inner_join() on one differently named column translates correctly",
-# {
-#     q <- left %>%
-#         dplyr::inner_join(right3, by = c("Species" = "Species2"))
+test_that("inner_join() on one differently named column translates correctly",
+{
+    q <- left %>%
+        dplyr::inner_join(right3, by = c("Species" = "Species2"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris3']) on $left.Species == $right.Species2"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris3']) on $left.['Species'] == $right.['Species2']"))
+})
 
-# test_that("inner_join() on two differently named columns translates correctly",
-# {
+test_that("inner_join() on two differently named columns translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::inner_join(right3, by = c("Species" = "Species2", "SepalWidth" = "SepalWidth2"))
+    q <- left %>%
+        dplyr::inner_join(right3, by = c("Species" = "Species2", "SepalWidth" = "SepalWidth2"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris3']) on $left.Species == $right.Species2, $left.SepalWidth == $right.SepalWidth2"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris3']) on $left.['Species'] == $right.['Species2'], $left.['SepalWidth'] == $right.['SepalWidth2']"))
+})
 
-# test_that("left_join() on a single column translates correctly",
-# {
+test_that("left_join() on a single column translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::left_join(right, by = c("Species"))
+    q <- left %>%
+        dplyr::left_join(right, by = c("Species"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = leftouter (database('local_df').['iris2']) on Species"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = leftouter (database('local_df').['iris2']) on ['Species']"))
+})
 
-# test_that("right_join() on a single column translates correctly",
-# {
+test_that("right_join() on a single column translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::right_join(right, by = c("Species"))
+    q <- left %>%
+        dplyr::right_join(right, by = c("Species"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = rightouter (database('local_df').['iris2']) on Species"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = rightouter (database('local_df').['iris2']) on ['Species']"))
+})
 
-# test_that("full_join() on a single column translates correctly",
-# {
+test_that("full_join() on a single column translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::full_join(right, by = c("Species"))
+    q <- left %>%
+        dplyr::full_join(right, by = c("Species"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = fullouter (database('local_df').['iris2']) on Species"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = fullouter (database('local_df').['iris2']) on ['Species']"))
+})
 
-# test_that("semi_join() on a single column translates correctly",
-# {
+test_that("semi_join() on a single column translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::semi_join(right, by = c("Species"))
+    q <- left %>%
+        dplyr::semi_join(right, by = c("Species"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = leftsemi (database('local_df').['iris2']) on Species"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = leftsemi (database('local_df').['iris2']) on ['Species']"))
+})
 
-# test_that("anti_join() on a single column translates correctly",
-# {
+test_that("anti_join() on a single column translates correctly",
+{
 
-#     q <- left %>%
-#         dplyr::anti_join(right, by = c("Species"))
+    q <- left %>%
+        dplyr::anti_join(right, by = c("Species"))
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = leftanti (database('local_df').['iris2']) on Species"))
-# })
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = leftanti (database('local_df').['iris2']) on ['Species']"))
+})
 
-# test_that("union_all translates correctly",
-# {
-#     tbl_iris_2 <- tbl_kusto_abstract(iris, "iris", src=simulate_kusto())
+test_that("union_all translates correctly",
+{
+    tbl_iris_2 <- tbl_kusto_abstract(iris, "iris", src=simulate_kusto())
 
-#     q <- tbl_iris %>%
-#         dplyr::union_all(tbl_iris_2)
+    q <- tbl_iris %>%
+        dplyr::union_all(tbl_iris_2)
 
-#     q_str <- show_query(q)
+    q_str <- show_query(q)
 
-#     expect_equal(q_str, kql("database('local_df').['iris']\n| union kind = outer (database('local_df').['iris'])"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| union kind = outer (database('local_df').['iris'])"))
 
-# })
+})
 
 test_that("as.Date() produces a Kusto datetime",
 {
