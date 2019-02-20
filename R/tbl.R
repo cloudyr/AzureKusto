@@ -10,7 +10,7 @@
 #'
 #' df <- tbl_kusto_abstract(df, "table1", src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
-tbl_kusto_abstract <- function(df, table_name, src = NULL) {
+tbl_kusto_abstract <- function(df, table_name, src = simulate_kusto()) {
   src$table <- table_name
   make_tbl("kusto_abstract", ops = op_base_local(df), src = src)
 }
@@ -181,7 +181,7 @@ simulate_kusto <- function()
     structure(
         list(
             database = "local_df",
-            cluster = "local_df"
+            server = "local_df"
         ),
         class = "kusto_database_endpoint"
     )

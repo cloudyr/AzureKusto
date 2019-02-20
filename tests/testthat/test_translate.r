@@ -3,7 +3,7 @@ context("translate")
 
 tbl_iris <- tibble::as.tibble(iris)
 names(tbl_iris) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
-tbl_iris <- tbl_kusto_abstract(tbl_iris, "iris", src = simulate_kusto())
+tbl_iris <- tbl_kusto_abstract(tbl_iris, "iris")
 
 test_that("select is translated to project",
 {
