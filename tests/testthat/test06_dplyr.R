@@ -101,7 +101,8 @@ test_that("joining works",
     out <- dplyr::full_join(ir, spec, by="species")
     expect_is(dplyr::collect(out), "tbl_df")
 
-    out <- dplyr::union(ir, ir)
+    expect_error(dplyr::union(ir, ir))
+    out <- dplyr::union_all(ir, ir)
     expect_is(dplyr::collect(out), "tbl_df")
 })
 
