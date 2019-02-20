@@ -227,3 +227,12 @@ collect.tbl_kusto <- function(tbl, ...)
     res <- do.call(run_query, params)
     as_tibble(res)
 }
+
+
+#' @keywords internal
+#' @export
+print.tbl_kusto_abstract <- function(x, ...)
+{
+    cat("<Kusto tbl>\n")
+    invisible(x)
+}
