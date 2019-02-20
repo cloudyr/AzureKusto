@@ -85,4 +85,23 @@ test_that("rename works",
     expect_identical(names(dplyr::collect(out))[1], "sl")
 })
 
+test_that("joining works",
+{
+    spec <- tbl_kusto(db, "species")
+
+    out <- dplyr::left_join(ir, spec, by="species")
+    expect_is(dplyr::collect(out), "tbl_df")
+
+    out <- dplyr::right_join(ir, spec, by="species")
+    expect_is(dplyr::collect(out), "tbl_df")
+
+    out <- dplyr::inner_join(ir, spec, by="species")
+    expect_is(dplyr::collect(out), "tbl_df")
+
+    out <- dplyr::full_join(ir, spec, by="species")
+    expect_is(dplyr::collect(out), "tbl_df")
+
+    out <- dplyr::union(ir, ir)
+    expect_is(dplyr::collect(out), "tbl_df")
+})
 
