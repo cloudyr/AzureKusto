@@ -233,6 +233,26 @@ collect.tbl_kusto <- function(tbl, ...)
 #' @export
 print.tbl_kusto_abstract <- function(x, ...)
 {
-    cat("<Kusto tbl>\n")
+    # different paths if this is a query, simulated table, or real table
+    if(!inherits(x$ops, "op_base"))
+    {
+        cat("<Kusto query>\n")
+        print(show_query(x))
+    }
+    else if(!inherits(x, "tbl_kusto"))
+    {
+        
+        cat("<Simulated Kusto table '")
+        name <- paste0("local_df/", x$src$table)
+        cat(name, "'>\n", sep="")
+    }
+    else
+    {
+        cat("<Kusto table '")
+        url <- httr::parse_url(x$src$server)
+        url$path <- file.path(x$src$database, x$src$table)
+        cat(httr::build_url(url), "'>\n", sep="")
+    }
+
     invisible(x)
 }
