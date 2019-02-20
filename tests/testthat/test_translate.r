@@ -86,7 +86,7 @@ test_that("variables from enclosing environment are passed to mutate()",
 
     q_str <- show_query(q)
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| extend SepalLengthLimit = 2.5"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| extend ['SepalLengthLimit'] = 2.5"))
 })
 
 test_that("select and filter can be combined",
@@ -118,7 +118,7 @@ test_that("mutate translates to extend",
     q_str <- q %>%
         show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| extend Species2 = ['Species']"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| extend ['Species2'] = ['Species']"))
 })
 
 test_that("multiple arguments to mutate() become multiple extend clauses",
@@ -129,7 +129,7 @@ test_that("multiple arguments to mutate() become multiple extend clauses",
     q_str <- q %>%
         show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| extend Species2 = ['Species']\n| extend Species3 = ['Species2']\n| extend Foo = 1 + 2"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| extend ['Species2'] = ['Species']\n| extend ['Species3'] = ['Species2']\n| extend ['Foo'] = 1 + 2"))
 })
 
 test_that("sum() translated correctly",
@@ -159,7 +159,7 @@ test_that("group_by() followed by summarize() generates summarize clause",
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize MaxSepalLength = max(['SepalLength']) by ['Species']"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize ['MaxSepalLength'] = max(['SepalLength']) by ['Species']"))
 })
 
 test_that("group_by() followed by ungroup() followed by summarize() generates summarize clause",
@@ -173,7 +173,7 @@ test_that("group_by() followed by ungroup() followed by summarize() generates su
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize MaxSepalLength = max(['SepalLength']) by ['Species']\n| summarize MeanOfMaxSepalLength = avg(['MaxSepalLength'])"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize ['MaxSepalLength'] = max(['SepalLength']) by ['Species']\n| summarize ['MeanOfMaxSepalLength'] = avg(['MaxSepalLength'])"))
 })
 
 test_that("group_by() followed by mutate() partitions the mutation by the grouping variables",
@@ -185,7 +185,7 @@ test_that("group_by() followed by mutate() partitions the mutation by the groupi
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| as tmp | join kind=leftouter (tmp | summarize SpeciesMaxSepalLength = max(['SepalLength']) by ['Species']) on ['Species']\n| project ['SepalLength'], ['SepalWidth'], ['PetalLength'], ['PetalWidth'], ['Species'], ['SpeciesMaxSepalLength']"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| as tmp | join kind=leftouter (tmp | summarize ['SpeciesMaxSepalLength'] = max(['SepalLength']) by ['Species']) on ['Species']\n| project ['SepalLength'], ['SepalWidth'], ['PetalLength'], ['PetalWidth'], ['Species'], ['SpeciesMaxSepalLength']"))
 })
 
 test_that("mutate() with an agg function and no group_by() groups by all other columns",
@@ -195,7 +195,7 @@ test_that("mutate() with an agg function and no group_by() groups by all other c
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize MaxSepalLength = max(['SepalLength']) by ['SepalLength'], ['SepalWidth'], ['PetalLength'], ['PetalWidth'], ['Species']"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize ['MaxSepalLength'] = max(['SepalLength']) by ['SepalLength'], ['SepalWidth'], ['PetalLength'], ['PetalWidth'], ['Species']"))
 })
 
 test_that("is_agg works with symbols and strings",
@@ -216,7 +216,7 @@ test_that("rename() renames variables",
 
     q_str <- q %>% show_query()
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| project-rename Species2 = ['Species'], SepalLength2 = ['SepalLength']"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| project-rename ['Species2'] = ['Species'], ['SepalLength2'] = ['SepalLength']"))
 })
 
 test_that("rename() errors when given a nonexistent column",

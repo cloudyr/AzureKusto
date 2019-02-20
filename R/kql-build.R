@@ -63,7 +63,7 @@ kql_build.op_rename <- function(op, ...)
     assigned_exprs <- mapply(get_expr, op$dots)
     stmts <- lapply(assigned_exprs, translate_kql)
     pieces <- lapply(seq_along(assigned_exprs),
-                     function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+                     function(i) sprintf("%s = %s", escape(ident(names(assigned_exprs)[i])), stmts[i]))
     kql(paste0("project-rename ", paste0(pieces, collapse=", ")))
 }
 
@@ -111,7 +111,7 @@ kql_build.op_mutate <- function(op, ...)
 
     stmts <- mapply(translate_kql, assigned_exprs)
     pieces <- lapply(seq_along(assigned_exprs),
-                     function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+                     function(i) sprintf("%s = %s", escape(ident(names(assigned_exprs)[i])), stmts[i]))
     kql(paste0(verb, pieces, by))
 }
 
@@ -129,7 +129,7 @@ kql_build.op_summarise <- function(op, ...)
     assigned_exprs <- mapply(get_expr, op$dots)
     stmts <- mapply(translate_kql, assigned_exprs)
     pieces <- lapply(seq_along(assigned_exprs),
-                     function(i) sprintf("%s = %s", names(assigned_exprs)[i], stmts[i]))
+                     function(i) sprintf("%s = %s", escape(ident(names(assigned_exprs)[i])), stmts[i]))
     groups <- build_kql(escape(ident(op$groups), collapse = ", "))
     by <- ifelse(nchar(groups) > 0, paste0(" by ", groups), "")
     kql(paste0("summarize ", pieces, by))
