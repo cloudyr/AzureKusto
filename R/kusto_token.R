@@ -71,7 +71,7 @@ delete_kusto_token <- function(server=NULL, clustername, location=NULL, tenant=N
     if(is.null(auth_type) && app == .kusto_app_id && (!"username" %in% names(list(...))))
         auth_type <- "device_code"
 
-    AzureAuth::delete_azure_token(server, tenant, app, auth_type=auth_type, confirm=confirm)
+    AzureAuth::delete_azure_token(server, tenant, app, auth_type=auth_type, confirm=confirm, ...)
 }
 
 
