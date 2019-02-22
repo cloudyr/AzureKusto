@@ -11,7 +11,7 @@
 #' df <- tbl_kusto_abstract(df, "table1", src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
 tbl_kusto_abstract <- function(df, table_name, src = simulate_kusto()) {
-  src$table <- table_name
+  src$table <- escape(ident(table_name))
   make_tbl("kusto_abstract", ops = op_base_local(df), src = src)
 }
 
@@ -205,8 +205,12 @@ tbl_kusto <- function(kusto_database, table_name, ...)
 {
     stopifnot(inherits(kusto_database, "kusto_database_endpoint"))
     params <- list(...)
-    kusto_database$table <- table_name
-    query_str <- sprintf("%s | take 1", escape(ident(table_name)))
+    #in case the table name is a function like MyFunction(arg1, arg2) we need to split it
+    table_ident <- strsplit(table_name, split="\\(")[[1]]
+    table_ident[1] <- escape(ident(table_ident[1]))
+    escaped_table_name <- paste(table_ident, collapse="(")
+    kusto_database$table <- escaped_table_name
+    query_str <- sprintf("%s | take 1", escaped_table_name)
     vars <- names(run_query(kusto_database, query_str, ...))
     ops <- op_base_remote(table_name, vars)
     make_tbl(c("kusto", "kusto_abstract"), src = kusto_database, ops = ops, params = params)
