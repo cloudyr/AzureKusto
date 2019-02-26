@@ -192,7 +192,7 @@ kql_escape_string <- function(x)
     kql_quote(x, "'")
 }
 
-#' Escape a Kusto identifer with ['']
+#' Escape a Kusto identifer with \[' '\]
 #' @param x An identifier to escape
 #' @export
 kql_escape_ident <- function(x)

@@ -4,7 +4,7 @@
 \alias{add_op_join}
 \title{Append a join operation to the tbl_kusto object's ops list}
 \usage{
-add_op_join(type, x, y, by = NULL, suffix = NULL)
+add_op_join(type, x, y, by = NULL, suffix = NULL, .strategy = NULL)
 }
 \arguments{
 \item{type}{The name of the join type,
@@ -17,6 +17,8 @@ one of: inner_join, left_join, right_join, full_join, semi_join, anti_join}
 \item{by}{A vector of column names; keys by which tbl x and tbl y will be joined}
 
 \item{suffix}{A vector of strings that will be appended to the names of non-join key columns that exist in both tbl x and tbl y to distinguish them by source tbl.}
+
+\item{.strategy}{A strategy hint to provide to Kusto.}
 }
 \description{
 Append a join operation to the tbl_kusto object's ops list
