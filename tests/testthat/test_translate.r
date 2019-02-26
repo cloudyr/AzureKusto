@@ -268,7 +268,6 @@ right3 <- tbl_kusto_abstract(right3, "iris3", src = simulate_kusto())
 
 test_that("inner_join() on a single column translates correctly",
 {
-
     q <- left %>%
         dplyr::inner_join(right, by = c("Species"))
 
@@ -431,4 +430,21 @@ test_that("as.POSIXlt() produces a Kusto datetime",
 
     expect_equal(q_str, kql("database('local_df').['df']\n| where ['dates'] == todatetime('2019-01-01')"))
     
+})
+
+test_that("join hinting translates correctly",
+{
+    q <- left %>%
+        dplyr::inner_join(right, by = c("Species"), .strategy="broadcast")
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) hint.strategy = broadcast on ['Species']"))
+
+    q <- left %>%
+        dplyr::inner_join(right2, by = c("Species", "SepalWidth"), .strategy="broadcast")
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) hint.strategy = broadcast on ['Species'], ['SepalWidth']"))
 })
