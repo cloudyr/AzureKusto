@@ -117,7 +117,7 @@ head.tbl_kusto_abstract <- function(x, n = 6L, ...)
 #' Join methods for Kusto tables
 #'
 #' These methods are the same as other joining methods, with the exception of the `.strategy` argument. It provides a hint to the Kusto engine on how to execute the join, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
-#""
+#'
 #' @param x,y Kusto tbls.
 #' @param by The columns to join on.
 #' @param suffix The suffixes to use for deduplicating column names.
