@@ -89,11 +89,12 @@ ungroup.tbl_kusto_abstract <- function(.data, ...)
 }
 
 #' @export
-summarise.tbl_kusto_abstract <- function(.data, ...)
+summarise.tbl_kusto_abstract <- function(.data, ..., .strategy = NULL, .shufflekeys = NULL)
 {
     dots <- quos(..., .named = TRUE)
     dots <- partial_eval(dots, vars = op_vars(.data))
-    add_op_single("summarise", .data, dots = dots)
+    add_op_single("summarise", .data, dots = dots,
+                  args = list(.strategy = .strategy, .shufflekeys = .shufflekeys))
 }
 
 #' @export

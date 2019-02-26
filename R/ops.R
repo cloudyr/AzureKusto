@@ -84,6 +84,7 @@ op_double <- function(name, x, y, args = list())
 #' @param y The "right" tbl
 #' @param by A vector of column names; keys by which tbl x and tbl y will be joined
 #' @param suffix  A vector of strings that will be appended to the names of non-join key columns that exist in both tbl x and tbl y to distinguish them by source tbl.
+#' @param .strategy A strategy hint to provide to Kusto.
 add_op_join <- function(type, x, y, by = NULL, suffix = NULL, .strategy = NULL)
 {
     by <- common_by(by, x, y)

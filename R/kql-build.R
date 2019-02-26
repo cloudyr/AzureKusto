@@ -132,7 +132,21 @@ kql_build.op_summarise <- function(op, ...)
                      function(i) sprintf("%s = %s", escape(ident(names(assigned_exprs)[i])), stmts[i]))
     groups <- build_kql(escape(ident(op$groups), collapse = ", "))
     by <- ifelse(nchar(groups) > 0, paste0(" by ", groups), "")
-    kql(paste0("summarize ", pieces, by))
+
+    .strategy <- if(!is.null(op$args$.strategy))
+        paste0("hint.strategy = ", op$args$.strategy, " ")
+    else NULL
+    .strategy <- ident_q(.strategy)
+
+    .shufflekeys <- if(!is.null(op$args$.shufflekeys))
+    {
+        vars <- sapply(op$args$.shufflekeys, function(x) escape(ident(x)))
+        paste0(paste0("hint.shufflekey = ", vars, collapse=" "), " ")
+    }
+    else NULL
+    .shufflekeys <- ident_q(.shufflekeys)
+    
+    kql(paste0("summarize ", .strategy, .shufflekeys, pieces, by))
 }
 
 #' @export
