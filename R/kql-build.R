@@ -160,9 +160,7 @@ kql_build.op_join <- function(op, ...)
     join_type <- op$args$type
 
     by <- op$args$by
-
     by_x <- escape(ident(by$x))
-
     if (identical(by$x, by$y))
         by_clause <- by_x
     else
@@ -172,6 +170,10 @@ kql_build.op_join <- function(op, ...)
     }
 
     y_render <- kql(kql_render(kql_build(op$y)))
+
+    # if(!is.null(.strategy))
+    #     .strategy <- paste0("hint.strategy = ", .strategy)
+    # .strategy <- ident_q(.strategy)
 
     switch(join_type,
         inner_join=
