@@ -171,24 +171,25 @@ kql_build.op_join <- function(op, ...)
 
     y_render <- kql(kql_render(kql_build(op$y)))
 
-    # if(!is.null(.strategy))
-    #     .strategy <- paste0("hint.strategy = ", .strategy)
-    # .strategy <- ident_q(.strategy)
+    .strategy <- if(!is.null(op$args$.strategy))
+        paste0(" hint.strategy = ", op$args$.strategy)
+    else NULL
+    .strategy <- ident_q(.strategy)
 
     switch(join_type,
         inner_join=
-            build_kql("join kind = inner (", y_render, ") on ", by_clause),
+            build_kql("join kind = inner (", y_render, ")", .strategy, " on ", by_clause),
         left_join=
-            build_kql("join kind = leftouter (", y_render, ") on ", by_clause),
+            build_kql("join kind = leftouter (", y_render, ")", .strategy, " on ", by_clause),
         right_join=
-            build_kql("join kind = rightouter (", y_render, ") on ", by_clause),
+            build_kql("join kind = rightouter (", y_render, ")", .strategy, " on ", by_clause),
         full_join=
-            build_kql("join kind = fullouter (", y_render, ") on ", by_clause),
+            build_kql("join kind = fullouter (", y_render, ")", .strategy, " on ", by_clause),
         semi_join=
-            build_kql("join kind = leftsemi (", y_render, ") on ", by_clause),
+            build_kql("join kind = leftsemi (", y_render, ")", .strategy, " on ", by_clause),
         anti_join=
-            build_kql("join kind = leftanti (", y_render, ") on ", by_clause),
-        build_kql("join kind = inner (", y_render, ") on ", by_clause)
+            build_kql("join kind = leftanti (", y_render, ")", .strategy, " on ", by_clause),
+        build_kql("join kind = inner (", y_render, ")", .strategy, " on ", by_clause)
     )
 }
 

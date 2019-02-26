@@ -84,7 +84,7 @@ op_double <- function(name, x, y, args = list())
 #' @param y The "right" tbl
 #' @param by A vector of column names; keys by which tbl x and tbl y will be joined
 #' @param suffix  A vector of strings that will be appended to the names of non-join key columns that exist in both tbl x and tbl y to distinguish them by source tbl.
-add_op_join <- function(type, x, y, by = NULL, suffix = NULL)
+add_op_join <- function(type, x, y, by = NULL, suffix = NULL, .strategy = NULL)
 {
     by <- common_by(by, x, y)
     vars <- join_vars(op_vars(x), op_vars(y), type = type, by = by, suffix = suffix)
@@ -93,7 +93,8 @@ add_op_join <- function(type, x, y, by = NULL, suffix = NULL)
                            vars = vars,
                            type = type,
                            by = by,
-                           suffix = suffix
+                           suffix = suffix,
+                           .strategy = .strategy
                        ))
     x
 }
