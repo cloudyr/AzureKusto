@@ -134,19 +134,19 @@ kql_build.op_summarise <- function(op, ...)
     by <- ifelse(nchar(groups) > 0, paste0(" by ", groups), "")
 
     .strategy <- if(!is.null(op$args$.strategy))
-        paste0("hint.strategy = ", op$args$.strategy, " ")
+        paste0(" hint.strategy = ", op$args$.strategy)
     else NULL
-    .strategy <- ident_q(.strategy)
 
     .shufflekeys <- if(!is.null(op$args$.shufflekeys))
     {
         vars <- sapply(op$args$.shufflekeys, function(x) escape(ident(x)))
-        paste0(paste0("hint.shufflekey = ", vars, collapse=" "), " ")
+        paste0(" hint.shufflekey = ", vars, collapse="")
     }
     else NULL
-    .shufflekeys <- ident_q(.shufflekeys)
     
-    kql(paste0("summarize ", .strategy, .shufflekeys, pieces, by))
+    # paste(c(*), collapse="") will not insert extra spaces when NULLs present
+    smry_str <- paste(c("summarize", .strategy, .shufflekeys, " "), collapse="")
+    kql(ident_q(paste0(smry_str, pieces, by)))
 }
 
 #' @export
@@ -188,23 +188,27 @@ kql_build.op_join <- function(op, ...)
     .strategy <- if(!is.null(op$args$.strategy))
         paste0(" hint.strategy = ", op$args$.strategy)
     else NULL
-    .strategy <- ident_q(.strategy)
 
-    switch(join_type,
-        inner_join=
-            build_kql("join kind = inner (", y_render, ")", .strategy, " on ", by_clause),
-        left_join=
-            build_kql("join kind = leftouter (", y_render, ")", .strategy, " on ", by_clause),
-        right_join=
-            build_kql("join kind = rightouter (", y_render, ")", .strategy, " on ", by_clause),
-        full_join=
-            build_kql("join kind = fullouter (", y_render, ")", .strategy, " on ", by_clause),
-        semi_join=
-            build_kql("join kind = leftsemi (", y_render, ")", .strategy, " on ", by_clause),
-        anti_join=
-            build_kql("join kind = leftanti (", y_render, ")", .strategy, " on ", by_clause),
-        build_kql("join kind = inner (", y_render, ")", .strategy, " on ", by_clause)
+    .shufflekeys <- if(!is.null(op$args$.shufflekeys))
+    {
+        vars <- sapply(op$args$.shufflekeys, function(x) escape(ident(x)))
+        paste0(" hint.shufflekey = ", vars, collapse="")
+    }
+    else NULL
+
+    kind <- switch(join_type,
+        inner_join="inner",
+        left_join="leftouter",
+        right_join="rightouter",
+        full_join="fullouter",
+        semi_join="leftsemi",
+        anti_join="leftanti",
+        stop("unknown join type")
     )
+
+    # paste(c(*), collapse="") will not insert extra spaces when NULLs present
+    join_str <- ident_q(paste(c("join kind = ", kind, .strategy, .shufflekeys, " "), collapse=""))
+    build_kql(join_str, "(", y_render, ") on ", by_clause)
 }
 
 #' @export

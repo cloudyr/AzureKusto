@@ -17,7 +17,7 @@
 \item{.shufflekeys}{A character vector of column names to use as shuffle keys.}
 }
 \description{
-This method is the same as other summarise methods, with the exception of the \code{.strategy} and \code{shufflekeys} arguments. They provide hints to the Kusto engine on how to execute the summarisation, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
+This method is the same as other summarise methods, with the exception of the \code{.strategy} and \code{shufflekeys} optional arguments. They provide hints to the Kusto engine on how to execute the summarisation, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
 }
 \seealso{
 \link[dplyr:summarise]{dplyr::summarise}

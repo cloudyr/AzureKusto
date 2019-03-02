@@ -436,17 +436,19 @@ test_that("join hinting translates correctly",
 {
     q <- left %>%
         dplyr::inner_join(right, by = c("Species"), .strategy="broadcast")
-
     q_str <- show_query(q)
-
-    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) hint.strategy = broadcast on ['Species']"))
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner hint.strategy = broadcast (database('local_df').['iris2']) on ['Species']"))
 
     q <- left %>%
         dplyr::inner_join(right2, by = c("Species", "SepalWidth"), .strategy="broadcast")
-
     q_str <- show_query(q)
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner hint.strategy = broadcast (database('local_df').['iris2']) on ['Species'], ['SepalWidth']"))
 
-    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner (database('local_df').['iris2']) hint.strategy = broadcast on ['Species'], ['SepalWidth']"))
+    q <- left %>%
+        dplyr::inner_join(right2, by = c("Species", "SepalWidth"), .strategy="shuffle",
+                          .shufflekeys=c("Species", "SepalWidth"))
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner hint.strategy = shuffle hint.shufflekey = ['Species'] hint.shufflekey = ['SepalWidth'] (database('local_df').['iris2']) on ['Species'], ['SepalWidth']"))
 })
 
 test_that("summarize hinting translates correctly",
@@ -454,17 +456,13 @@ test_that("summarize hinting translates correctly",
     q <- tbl_iris %>%
         dplyr::group_by(Species) %>%
         dplyr::summarize(MaxSepalLength = max(SepalLength, na.rm = TRUE), .strategy="shuffle")
-
     q_str <- q %>% show_query()
-
     expect_equal(q_str, kql("database('local_df').['iris']\n| summarize hint.strategy = shuffle ['MaxSepalLength'] = max(['SepalLength']) by ['Species']"))
 
     q <- tbl_iris %>%
         dplyr::group_by(Species) %>%
         dplyr::summarize(MaxSepalLength = max(SepalLength, na.rm = TRUE), .shufflekeys=c("SepalLength", "SepalWidth"))
-
     q_str <- q %>% show_query()
-
     expect_equal(q_str, kql("database('local_df').['iris']\n| summarize hint.shufflekey = ['SepalLength'] hint.shufflekey = ['SepalWidth'] ['MaxSepalLength'] = max(['SepalLength']) by ['Species']"))
 })
 
