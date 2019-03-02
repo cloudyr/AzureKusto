@@ -449,6 +449,20 @@ test_that("join hinting translates correctly",
                           .shufflekeys=c("Species", "SepalWidth"))
     q_str <- show_query(q)
     expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner hint.strategy = shuffle hint.shufflekey = ['Species'] hint.shufflekey = ['SepalWidth'] (database('local_df').['iris2']) on ['Species'], ['SepalWidth']"))
+
+    # only numeric input to .num_partitions allowed
+    q <- left %>%
+        dplyr::inner_join(right2, by = c("Species", "SepalWidth"), .strategy="shuffle",
+                          .shufflekeys=c("Species", "SepalWidth"),
+                          .num_partitions="foo")
+    expect_error(show_query(q))
+
+    q <- left %>%
+        dplyr::inner_join(right2, by = c("Species", "SepalWidth"), .strategy="shuffle",
+                          .shufflekeys=c("Species", "SepalWidth"),
+                          .num_partitions=2)
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("database('local_df').['iris']\n| join kind = inner hint.strategy = shuffle hint.shufflekey = ['Species'] hint.shufflekey = ['SepalWidth'] hint.num_partitions = 2 (database('local_df').['iris2']) on ['Species'], ['SepalWidth']"))
 })
 
 test_that("summarize hinting translates correctly",
@@ -464,5 +478,19 @@ test_that("summarize hinting translates correctly",
         dplyr::summarize(MaxSepalLength = max(SepalLength, na.rm = TRUE), .shufflekeys=c("SepalLength", "SepalWidth"))
     q_str <- q %>% show_query()
     expect_equal(q_str, kql("database('local_df').['iris']\n| summarize hint.shufflekey = ['SepalLength'] hint.shufflekey = ['SepalWidth'] ['MaxSepalLength'] = max(['SepalLength']) by ['Species']"))
+
+    # only numeric input to .num_partitions allowed
+    q <- tbl_iris %>%
+        dplyr::group_by(Species) %>%
+        dplyr::summarize(MaxSepalLength = max(SepalLength, na.rm = TRUE),
+            .shufflekeys=c("SepalLength", "SepalWidth"), .num_partitions="foo")
+    expect_error(show_query(q))
+
+    q <- tbl_iris %>%
+        dplyr::group_by(Species) %>%
+        dplyr::summarize(MaxSepalLength = max(SepalLength, na.rm = TRUE),
+            .shufflekeys=c("SepalLength", "SepalWidth"), .num_partitions=2)
+    q_str <- q %>% show_query()
+    expect_equal(q_str, kql("database('local_df').['iris']\n| summarize hint.shufflekey = ['SepalLength'] hint.shufflekey = ['SepalWidth'] hint.num_partitions = 2 ['MaxSepalLength'] = max(['SepalLength']) by ['Species']"))
 })
 

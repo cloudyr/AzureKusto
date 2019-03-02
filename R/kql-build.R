@@ -143,9 +143,15 @@ kql_build.op_summarise <- function(op, ...)
         paste0(" hint.shufflekey = ", vars, collapse="")
     }
     else NULL
+
+    .num_partitions <- if(is.numeric(op$args$.num_partitions))
+        paste0(" hint.num_partitions = ", op$args$.num_partitions)
+    else if(!is.null(op$args$.num_partitions))
+        stop(".num_partitions must be a number", .call=FALSE)
+    else NULL
     
     # paste(c(*), collapse="") will not insert extra spaces when NULLs present
-    smry_str <- paste(c("summarize", .strategy, .shufflekeys, " "), collapse="")
+    smry_str <- paste(c("summarize", .strategy, .shufflekeys, .num_partitions, " "), collapse="")
     kql(ident_q(paste0(smry_str, pieces, by)))
 }
 
@@ -196,6 +202,12 @@ kql_build.op_join <- function(op, ...)
     }
     else NULL
 
+    .num_partitions <- if(is.numeric(op$args$.num_partitions))
+        paste0(" hint.num_partitions = ", op$args$.num_partitions)
+    else if(!is.null(op$args$.num_partitions))
+        stop(".num_partitions must be a number", .call=FALSE)
+    else NULL
+
     kind <- switch(join_type,
         inner_join="inner",
         left_join="leftouter",
@@ -207,7 +219,7 @@ kql_build.op_join <- function(op, ...)
     )
 
     # paste(c(*), collapse="") will not insert extra spaces when NULLs present
-    join_str <- ident_q(paste(c("join kind = ", kind, .strategy, .shufflekeys, " "), collapse=""))
+    join_str <- ident_q(paste(c("join kind = ", kind, .strategy, .shufflekeys, .num_partitions, " "), collapse=""))
     build_kql(join_str, "(", y_render, ") on ", by_clause)
 }
 

@@ -16,22 +16,28 @@
 \title{Join methods for Kusto tables}
 \usage{
 \method{inner_join}{tbl_kusto_abstract}(x, y, by = NULL,
-  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL, ...)
+  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
+  .num_partitions = NULL, ...)
 
 \method{left_join}{tbl_kusto_abstract}(x, y, by = NULL,
-  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL, ...)
+  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
+  .num_partitions = NULL, ...)
 
 \method{right_join}{tbl_kusto_abstract}(x, y, by = NULL,
-  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL, ...)
+  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
+  .num_partitions = NULL, ...)
 
 \method{full_join}{tbl_kusto_abstract}(x, y, by = NULL,
-  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL, ...)
+  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
+  .num_partitions = NULL, ...)
 
 \method{semi_join}{tbl_kusto_abstract}(x, y, by = NULL,
-  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL, ...)
+  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
+  .num_partitions = NULL, ...)
 
 \method{anti_join}{tbl_kusto_abstract}(x, y, by = NULL,
-  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL, ...)
+  suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
+  .num_partitions = NULL, ...)
 }
 \arguments{
 \item{x, y}{Kusto tbls.}
@@ -44,10 +50,12 @@
 
 \item{.shufflekeys}{A character vector of column names to use as shuffle keys.}
 
+\item{.num_partitions}{The number of partitions for a shuffle query.}
+
 \item{...}{Other arguments passed to lower-level functions.}
 }
 \description{
-These methods are the same as other joining methods, with the exception of the \code{.strategy} and \code{.shufflekeys} optional arguments. They provide hints to the Kusto engine on how to execute the join, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
+These methods are the same as other joining methods, with the exception of the \code{.strategy}, \code{.shufflekeys} and \code{.num_partitions} optional arguments. They provide hints to the Kusto engine on how to execute the join, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
 }
 \seealso{
 \link[dplyr:join]{dplyr::join}

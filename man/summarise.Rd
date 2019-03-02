@@ -5,7 +5,7 @@
 \title{Summarise method for Kusto tables}
 \usage{
 \method{summarise}{tbl_kusto_abstract}(.data, ..., .strategy = NULL,
-  .shufflekeys = NULL)
+  .shufflekeys = NULL, .num_partitions = NULL)
 }
 \arguments{
 \item{.data}{A Kusto tbl.}
@@ -15,9 +15,11 @@
 \item{.strategy}{A summarise strategy to pass to Kusto. Currently the only value supported is "shuffle".}
 
 \item{.shufflekeys}{A character vector of column names to use as shuffle keys.}
+
+\item{.num_partitions}{The number of partitions for a shuffle query.}
 }
 \description{
-This method is the same as other summarise methods, with the exception of the \code{.strategy} and \code{shufflekeys} optional arguments. They provide hints to the Kusto engine on how to execute the summarisation, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
+This method is the same as other summarise methods, with the exception of the \code{.strategy}, \code{.shufflekeys} and \code{.num_partitions} optional arguments. They provide hints to the Kusto engine on how to execute the summarisation, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
 }
 \seealso{
 \link[dplyr:summarise]{dplyr::summarise}

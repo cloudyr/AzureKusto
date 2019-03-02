@@ -115,6 +115,10 @@ test_that("summarize hinting works",
     out <- dplyr::summarise(dplyr::group_by(ir, species), m=mean(sepal_length, na.rm=TRUE),
         .strategy="shuffle", .shufflekeys="species")
     expect_identical(nrow(dplyr::collect(out)), 3L)
+
+    out <- dplyr::summarise(dplyr::group_by(ir, species), m=mean(sepal_length, na.rm=TRUE),
+        .strategy="shuffle", .num_partitions=2)
+    expect_identical(nrow(dplyr::collect(out)), 3L)
 })
 
 test_that("join hinting works",
@@ -128,5 +132,8 @@ test_that("join hinting works",
     expect_is(dplyr::collect(out), "tbl_df")
 
     out <- dplyr::left_join(ir, spec, by="species", .strategy="shuffle", .shufflekeys="species")
+    expect_is(dplyr::collect(out), "tbl_df")
+
+    out <- dplyr::left_join(ir, spec, by="species", .strategy="shuffle", .num_partitions=2)
     expect_is(dplyr::collect(out), "tbl_df")
 })

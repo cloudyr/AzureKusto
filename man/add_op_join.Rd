@@ -5,7 +5,7 @@
 \title{Append a join operation to the tbl_kusto object's ops list}
 \usage{
 add_op_join(type, x, y, by = NULL, suffix = NULL, .strategy = NULL,
-  .shufflekeys = NULL)
+  .shufflekeys = NULL, .num_partitions = NULL)
 }
 \arguments{
 \item{type}{The name of the join type,
@@ -22,6 +22,8 @@ one of: inner_join, left_join, right_join, full_join, semi_join, anti_join}
 \item{.strategy}{A strategy hint to provide to Kusto.}
 
 \item{.shufflekeys}{A character vector of column names to shuffle on, if \code{.strategy = "shuffle"}.}
+
+\item{.num_partitions}{The number of partitions for a shuffle query.}
 }
 \description{
 Append a join operation to the tbl_kusto object's ops list

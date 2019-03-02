@@ -90,22 +90,23 @@ ungroup.tbl_kusto_abstract <- function(.data, ...)
 
 #' Summarise method for Kusto tables
 #'
-#' This method is the same as other summarise methods, with the exception of the `.strategy` and `shufflekeys` optional arguments. They provide hints to the Kusto engine on how to execute the summarisation, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
+#' This method is the same as other summarise methods, with the exception of the `.strategy`, `.shufflekeys` and `.num_partitions` optional arguments. They provide hints to the Kusto engine on how to execute the summarisation, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
 #'
 #' @param .data A Kusto tbl.
 #' @param ... Summarise expressions.
 #' @param .strategy A summarise strategy to pass to Kusto. Currently the only value supported is "shuffle".
 #' @param .shufflekeys A character vector of column names to use as shuffle keys.
+#' @param .num_partitions The number of partitions for a shuffle query.
 #' @seealso
 #' [dplyr::summarise]
 #' @rdname summarise
 #' @export
-summarise.tbl_kusto_abstract <- function(.data, ..., .strategy = NULL, .shufflekeys = NULL)
+summarise.tbl_kusto_abstract <- function(.data, ..., .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL)
 {
     dots <- quos(..., .named = TRUE)
     dots <- partial_eval(dots, vars = op_vars(.data))
     add_op_single("summarise", .data, dots = dots,
-                  args = list(.strategy = .strategy, .shufflekeys = .shufflekeys))
+                  args = list(.strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions))
 }
 
 #' @export
@@ -116,13 +117,14 @@ head.tbl_kusto_abstract <- function(x, n = 6L, ...)
 
 #' Join methods for Kusto tables
 #'
-#' These methods are the same as other joining methods, with the exception of the `.strategy` and `.shufflekeys` optional arguments. They provide hints to the Kusto engine on how to execute the join, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
+#' These methods are the same as other joining methods, with the exception of the `.strategy`, `.shufflekeys` and `.num_partitions` optional arguments. They provide hints to the Kusto engine on how to execute the join, and can sometimes be useful to speed up a query. See the Kusto documentation for more details.
 #'
 #' @param x,y Kusto tbls.
 #' @param by The columns to join on.
 #' @param suffix The suffixes to use for deduplicating column names.
 #' @param .strategy A join strategy hint to pass to Kusto. Currently the values supported are "shuffle" and "broadcast".
 #' @param .shufflekeys A character vector of column names to use as shuffle keys.
+#' @param .num_partitions The number of partitions for a shuffle query.
 #' @param ... Other arguments passed to lower-level functions.
 #' @seealso
 #' [dplyr::join]
@@ -130,51 +132,57 @@ head.tbl_kusto_abstract <- function(x, n = 6L, ...)
 #' @rdname join
 #' @export
 inner_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
-                                          .strategy = NULL, .shufflekeys = NULL, ...)
+                                          .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL, ...)
 {
-    add_op_join("inner_join", x, y, by = by, suffix = suffix, .strategy = .strategy, .shufflekeys = .shufflekeys, ...)
+    add_op_join("inner_join", x, y, by = by, suffix = suffix,
+                .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions, ...)
 }
 
 #' @rdname join
 #' @export
 left_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
-                                         .strategy = NULL, .shufflekeys = NULL, ...)
+                                         .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL, ...)
 {
-    add_op_join("left_join", x, y, by = by, suffix = suffix, .strategy = .strategy, .shufflekeys = .shufflekeys, ...)
+    add_op_join("left_join", x, y, by = by, suffix = suffix,
+                .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions, ...)
 }
 
 #' @rdname join
 #' @export
 right_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
-                                          .strategy = NULL, .shufflekeys = NULL, ...)
+                                          .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL, ...)
 {
-    add_op_join("right_join", x, y, by = by, suffix = suffix, .strategy = .strategy, .shufflekeys = .shufflekeys, ...)
+    add_op_join("right_join", x, y, by = by, suffix = suffix,
+                .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions, ...)
 }
 
 #' @rdname join
 #' @export
 full_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
-                                         .strategy = NULL, .shufflekeys = NULL, ...)
+                                         .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL, ...)
 
 {
-    add_op_join("full_join", x, y, by = by, suffix = suffix, .strategy = .strategy, .shufflekeys = .shufflekeys, ...)
+    add_op_join("full_join", x, y, by = by, suffix = suffix,
+                .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions, ...)
 }
 
 #' @rdname join
 #' @export
 semi_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
-                                         .strategy = NULL, .shufflekeys = NULL, ...)
+                                         .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL, ...)
 
 {
-    add_op_join("semi_join", x, y, by = by, suffix = suffix, .strategy = .strategy, .shufflekeys = .shufflekeys, ...)
+    add_op_join("semi_join", x, y, by = by, suffix = suffix,
+                .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions, ...)
 }
 
 #' @rdname join
 #' @export
 anti_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
-                                         .strategy = NULL, .shufflekeys = NULL, ...)
+                                         .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL, ...)
 {
-    add_op_join("anti_join", x, y, by = by, suffix = suffix, .strategy = .strategy, .shufflekeys = .shufflekeys, ...)
+    add_op_join("anti_join", x, y, by = by, suffix = suffix,
+                .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions, ...)
 }
 
 #' @export
