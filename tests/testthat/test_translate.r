@@ -27,7 +27,7 @@ test_that("params to a function can be used inside a filter expressions",
     names(tbl_iris_p) <- c("SepalLength", "SepalWidth", "PetalLength", "PetalWidth", "Species")
     tbl_iris_p <- tbl_kusto_abstract(tbl_iris_p, "iris", p="setosa")
     
-    q <- filter(tbl_iris_p, Species == 'setosa')
+    q <- filter(tbl_iris_p, Species == p)
     q_str <- show_query(q)
 
     expect_equal(q_str, kql("database('local_df').['iris']\n| where ['Species'] == 'setosa'"))
