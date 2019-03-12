@@ -10,9 +10,17 @@
 #'
 #' df <- tbl_kusto_abstract(df, "table1", src = simulate_kusto())
 #' df %>% summarise(x = sd(x)) %>% show_query()
-tbl_kusto_abstract <- function(df, table_name, src = simulate_kusto()) {
-  src$table <- escape(ident(table_name))
-  make_tbl("kusto_abstract", ops = op_base_local(df), src = src)
+tbl_kusto_abstract <- function(df, table_name, ...) {
+  params <- list(...)
+  src <- structure(
+      list(
+          database = "local_df",
+          server = "local_df",
+          table = escape(ident(table_name))
+      ),
+      class = "kusto_database_endpoint"
+  )
+  make_tbl("kusto_abstract", ops = op_base_local(df), src = src, params = params)
 }
 
 setOldClass(c("tbl_kusto_abstract", "tbl"))
@@ -43,6 +51,12 @@ rename.tbl_kusto_abstract <- function(.data, ...)
 filter.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
+    # add the tbl params into the environment of the expression's quosure
+    dots <- lapply(dots, function(x)
+    {
+        new_env <- list2env(.data$params, envir = get_env(x))
+        quo_set_env(x, new_env)
+    })
     dots <- partial_eval(dots, vars = op_vars(.data))
     add_op_single("filter", .data, dots = dots)
 }
@@ -51,6 +65,11 @@ filter.tbl_kusto_abstract <- function(.data, ...)
 mutate.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(..., .named=TRUE)
+    dots <- lapply(dots, function(x)
+    {
+        new_env <- list2env(.data$params, envir = get_env(x))
+        quo_set_env(x, new_env)
+    })
     dots <- partial_eval(dots, vars = op_vars(.data))
     add_op_single("mutate", .data, dots = dots)
 }
@@ -255,19 +274,6 @@ intersect.tbl_kusto_abstract <- function(x, y, ...)
 tbl_vars.tbl_kusto_abstract <- function(x)
 {
     op_vars(x$ops)
-}
-
-#' Simulate a kusto database endpoint as the source for a tbl_kusto_abstract.
-#' @export
-simulate_kusto <- function()
-{
-    structure(
-        list(
-            database = "local_df",
-            server = "local_df"
-        ),
-        class = "kusto_database_endpoint"
-    )
 }
 
 #' Translate a sequence of dplyr operations on a tbl into a Kusto query string.

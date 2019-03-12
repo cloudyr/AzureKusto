@@ -38,7 +38,7 @@ kql_build.op_filter <- function(op, ...)
 {
     dots <- mapply(get_expr, op$dots)
     dot_names <- mapply(all_names, dots)
-    cols <- tidyselect::vars_select(op$vars, !!! dot_names)
+    tidyselect::vars_select(op$vars, !!! dot_names)
 
     translated_dots <- lapply(dots, translate_kql)
     built_dots <- lapply(translated_dots, build_kql)
