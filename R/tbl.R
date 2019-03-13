@@ -52,11 +52,7 @@ filter.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(...)
     # add the tbl params into the environment of the expression's quosure
-    dots <- lapply(dots, function(x)
-    {
-        new_env <- list2env(.data$params, envir = get_env(x))
-        quo_set_env(x, new_env)
-    })
+    dots <- lapply(dots, add_params_to_quosure, params=.data$params)
     dots <- partial_eval(dots, vars = op_vars(.data))
     add_op_single("filter", .data, dots = dots)
 }
@@ -65,11 +61,7 @@ filter.tbl_kusto_abstract <- function(.data, ...)
 mutate.tbl_kusto_abstract <- function(.data, ...)
 {
     dots <- quos(..., .named=TRUE)
-    dots <- lapply(dots, function(x)
-    {
-        new_env <- list2env(.data$params, envir = get_env(x))
-        quo_set_env(x, new_env)
-    })
+    dots <- lapply(dots, add_params_to_quosure, params=.data$params)
     dots <- partial_eval(dots, vars = op_vars(.data))
     add_op_single("mutate", .data, dots = dots)
 }
@@ -349,3 +341,9 @@ print.tbl_kusto_abstract <- function(x, ...)
 
     invisible(x)
 }
+
+add_params_to_quosure <- function(quosure, params)
+{
+  new_env <- list2env(params, envir = get_env(quosure))
+  quo_set_env(quosure, new_env)
+}    

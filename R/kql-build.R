@@ -38,6 +38,9 @@ kql_build.op_filter <- function(op, ...)
 {
     dots <- mapply(get_expr, op$dots)
     dot_names <- mapply(all_names, dots)
+
+    # throw an exception if any filter expression references
+    # a var that isn't a column in the table
     tidyselect::vars_select(op$vars, !!! dot_names)
 
     translated_dots <- lapply(dots, translate_kql)
