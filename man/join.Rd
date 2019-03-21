@@ -21,7 +21,7 @@
 
 \method{left_join}{tbl_kusto_abstract}(x, y, by = NULL,
   suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,
-  .num_partitions = NULL, .remote = .NULL, ...)
+  .num_partitions = NULL, .remote = NULL, ...)
 
 \method{right_join}{tbl_kusto_abstract}(x, y, by = NULL,
   suffix = c(".x", ".y"), .strategy = NULL, .shufflekeys = NULL,

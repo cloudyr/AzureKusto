@@ -192,7 +192,7 @@ inner_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"
 #' @export
 left_join.tbl_kusto_abstract <- function(x, y, by = NULL, suffix = c(".x", ".y"),
                                          .strategy = NULL, .shufflekeys = NULL, .num_partitions = NULL,
-                                         .remote = .NULL, ...)
+                                         .remote = NULL, ...)
 {
     add_op_join("left_join", x, y, by = by, suffix = suffix,
                 .strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions,
