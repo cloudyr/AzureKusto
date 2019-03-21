@@ -167,4 +167,10 @@ test_that("cross-cluster joins work",
 
     out <- dplyr::collect(dplyr::left_join(ir, spec))
     expect_true(inherits(out, "tbl_df") && nrow(out) == 150)
+
+    out <- dplyr::collect(dplyr::left_join(ir, spec, .remote="left"))
+    expect_true(inherits(out, "tbl_df") && nrow(out) == 150)
+
+    out <- dplyr::collect(dplyr::left_join(ir, spec, .remote="right"))
+    expect_true(inherits(out, "tbl_df") && nrow(out) == 150)
 })
