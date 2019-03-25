@@ -135,6 +135,28 @@ test_that("local inline ingestion works",
     expect_equal(run_query(db, "irisdfinline | count")$Count, 150)
 })
 
+test_that("ingestion via compute() verb works",
+{
+    run_query(db, ".create table irisfileinline2 (sl:real, sw:real, pl:real, pw:real, species:string)")
+    ingest_local(db, "../resources/iris.csv", "irisfileinline2", method="inline")
+    
+    irisfileinline2 <- tbl_kusto(db, "irisfileinline2")
+
+    q <- irisfileinline2 %>%
+        group_by(species) %>%
+        summmarize(max_sepal_length = max(sepal_length))
+
+    new_tbl <- compute(q, "irismaxsepallength")
+    expect_equal(tbl_kusto(db, "irismaxsepallength")$src$table, "['irismaxsepallength']")
+})
+
+test_that("ingestion via copy_to() verb works",
+{
+    tbl_iris <- iris
+    names(tbl_iris) <- c('SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth', 'Species')
+    iris_copy_to <- copy_to(db, "iris_copy_to", tbl_iris)
+    expect_equal(tbl_kusto(db, "iris_copy_to")$src$table, "['iris_copy_to']")
+})
 
 srv$delete_database(dbname, confirm=FALSE)
 delete_blob_container(blobstor$get_blob_endpoint(), dbname, confirm=FALSE)
