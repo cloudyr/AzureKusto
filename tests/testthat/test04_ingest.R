@@ -144,18 +144,18 @@ test_that("ingestion via compute() verb works",
 
     q <- irisfileinline2 %>%
         group_by(species) %>%
-        summmarize(max_sepal_length = max(sepal_length))
+        summarize(max_sepal_length = max(sl))
 
     new_tbl <- compute(q, "irismaxsepallength")
-    expect_equal(tbl_kusto(db, "irismaxsepallength")$src$table, "['irismaxsepallength']")
+    expect_equal(new_tbl$src$table, "['irismaxsepallength']")
 })
 
 test_that("ingestion via copy_to() verb works",
 {
     tbl_iris <- iris
     names(tbl_iris) <- c('SepalLength', 'SepalWidth', 'PetalLength', 'PetalWidth', 'Species')
-    iris_copy_to <- copy_to(db, "iris_copy_to", tbl_iris)
-    expect_equal(tbl_kusto(db, "iris_copy_to")$src$table, "['iris_copy_to']")
+    iris_copy_to <- copy_to(db, tbl_iris, "iris_copy_to")
+    expect_equal(iris_copy_to$src$table, "['iris_copy_to']")
 })
 
 srv$delete_database(dbname, confirm=FALSE)
