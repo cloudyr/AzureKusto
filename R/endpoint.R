@@ -259,9 +259,7 @@ copy_to.kusto_database_endpoint <- function(dest, df, name=deparse(substitute(df
         stop("`df` must be a local dataframe or a remote tbl_kusto", call. = FALSE)   
 
     if (inherits(df, "tbl_kusto") && dest$server == df$src$server)
-    {
         out <- compute(df, name = name, ...)
-    }
     else
     {
         df <- collect(df)
@@ -273,15 +271,10 @@ copy_to.kusto_database_endpoint <- function(dest, df, name=deparse(substitute(df
         if (tableExists)
         {
             if(overwrite)
-            {
                 DBI::dbRemoveTable(cnxn, name)
-            }
-            else
-            {
-                stop(paste0("table ",
-                            name,
-                            " already exists. If you wish to overwrite it, specify overwrite=TRUE"))
-            }
+            else stop(paste0("table ",
+                             name,
+                             " already exists. If you wish to overwrite it, specify overwrite=TRUE"))
         }
         dbWriteTable(cnxn, name, df, method=method)
         
