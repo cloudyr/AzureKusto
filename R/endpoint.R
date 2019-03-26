@@ -259,7 +259,7 @@ copy_to.kusto_database_endpoint <- function(dest, df, name=deparse(substitute(df
         stop("`df` must be a local dataframe or a remote tbl_kusto", call. = FALSE)   
     }
 
-    if (inherits(df, "tbl_kusto"))
+    if (inherits(df, "tbl_kusto") && dest$server == df$src$server)
     {
         out <- compute(df, name = name, ...)
     }
