@@ -314,4 +314,3 @@ flycheck_*.el
 
 .env
 test-creds.*
-test_creds.*
