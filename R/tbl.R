@@ -326,17 +326,17 @@ collect.tbl_kusto <- function(tbl, ...)
     as_tibble(res)
 }
 
-random_table_name <- function() {
-    paste0("AzureKusto_", paste0(sample(letters, 8), collapse=""))
+generate_table_name <- function() {
+    paste0("Rtbl_", paste0(sample(letters, 8), collapse=""))
 }
 
 #' Execute the query, store the results in a table, and return a reference to the new table
 #' @export
 #' @param tbl An instance of class tbl_kusto representing a Kusto table
 #' @param name The name for the Kusto table to be created.
-#' If name is omitted, the table will be named AzureKusto_ + 8 random lowercase letters
+#' If name is omitted, the table will be named Rtbl_ + 8 random lowercase letters
 #' @param ... other parameters passed to the query
-compute.tbl_kusto <- function(tbl, name=random_table_name(), ...)
+compute.tbl_kusto <- function(tbl, name=generate_table_name(), ...)
 {
     q <- kql_build(tbl)
     q_str <- kql_render(q)

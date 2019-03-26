@@ -255,9 +255,8 @@ print.kusto_database_endpoint <- function(x, ...)
 #' @seealso [collect()] for the opposite action; downloading remote data into a local tbl.
 copy_to.kusto_database_endpoint <- function(dest, df, name=deparse(substitute(df)), overwrite = FALSE, method = "inline", ...)
 {
-    if (!is.data.frame(df) && !inherits(df, "tbl_kusto")) {
+    if (!is.data.frame(df) && !inherits(df, "tbl_kusto"))
         stop("`df` must be a local dataframe or a remote tbl_kusto", call. = FALSE)   
-    }
 
     if (inherits(df, "tbl_kusto") && dest$server == df$src$server)
     {
