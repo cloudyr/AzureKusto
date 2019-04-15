@@ -1,6 +1,5 @@
 ---
 title: "AzureKusto"
-author: "Alex Kyllo"
 date: "2019-04-15"
 output: rmarkdown::html_vignette
 vignette: >
