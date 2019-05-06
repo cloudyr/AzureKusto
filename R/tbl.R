@@ -173,7 +173,7 @@ nest.tbl_kusto_abstract <- function(.data, ...)
     if (is_empty(group_vars))
         summarise(.data, !!! dot_calls)
     else
-        summarise(group_by(.data, !! as.name(group_vars)), !!! dot_calls)        
+        summarise(group_by(.data, !! as.name(group_vars)), !!! dot_calls)
 }
 
 #' @export
@@ -401,7 +401,6 @@ print.tbl_kusto_abstract <- function(x, ...)
     }
     else if(!inherits(x, "tbl_kusto"))
     {
-        
         cat("<Simulated Kusto table '")
         name <- paste0("local_df/", x$src$table)
         cat(name, "'>\n", sep="")

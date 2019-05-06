@@ -567,6 +567,25 @@ test_that("unnest translates to mv-expand",
 
 })
 
+test_that("unnest can handle multiple columns",
+{
+
+    list_df <- tibble::tibble(
+        x = 1:2,
+        y = list(a = 1, b = 3:4),
+        z = list(c = 2, b = 5:6)
+        )
+
+    list_tbl <- tbl_kusto_abstract(list_df, table_name = "list_tbl")
+
+    q <- list_tbl %>%
+        tidyr::unnest(y, z)
+
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("cluster('local_df').database('local_df').['list_tbl']\n| mv-expand ['y'], ['z']"))
+
+})
+
 test_that("unnest .id translates to with_itemindex",
 {
 

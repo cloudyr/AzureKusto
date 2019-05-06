@@ -152,7 +152,7 @@ make_error_message <- function(content)
 
 parse_query_result <- function(tables, .use_integer64)
 {
-    # if raw http response, pass through unchanged  
+    # if raw http response, pass through unchanged
     if(inherits(tables, "response"))
         return(tables)
 
@@ -172,7 +172,7 @@ parse_query_result <- function(tables, .use_integer64)
 
 parse_command_result <- function(tables, .use_integer64)
 {
-    # if raw http response, pass through unchanged  
+    # if raw http response, pass through unchanged
     if(inherits(tables, "response"))
         return(tables)
 
@@ -185,12 +185,12 @@ parse_command_result <- function(tables, .use_integer64)
 }
 
 
-convert_result_types <- function(df, coltypes_df, .use_integer64)
+convert_result_types <- function(df, coltypes_df, .use_integer64, .response_dynamic_serialization)
 {
     if(is_empty(df))
         return(list())
 
-    convert_kusto_datatype <- function(column, kusto_type, .use_integer64)
+    convert_kusto_datatype <- function(column, kusto_type, .use_integer64, .response_dynamic_serialization)
     {
         switch(kusto_type,
             long=, Int64=
