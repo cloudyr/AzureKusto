@@ -144,18 +144,29 @@ summarise.tbl_kusto_abstract <- function(.data, ..., .strategy = NULL, .shufflek
 #'
 #' @param .data A Kusto tbl.
 #' @param ... Specification of columns to unnest.
-#' @param .drop Should additional list columns be dropped? By default, unnest will drop them if unnesting the specified columns requires the rows to be duplicated.
 #' @param .id Data frame identifier - if supplied, will create a new column with name .id, giving a unique identifier. This is most useful if the list column is named.
-#' @param .sep If non-NULL, the names of unnested data frame columns will combine the name of the original list-col with the names from nested data frame, separated by .sep.
-#' @param .preserve Optionally, list-columns to preserve in the output. These will be duplicated in the same way as atomic vectors.
 #' @export
-unnest.tbl_kusto_abstract <- function(.data, ..., .drop = NA, .id = NULL, .sep = NULL, .preserve = NULL)
+unnest.tbl_kusto_abstract <- function(.data, ..., .id = NULL)
 {
     dots <- quos(...)
-    add_op_single("unnest", .data, dots = dots, args = list(.drop = .drop,
-                                                            .id = .id,
-                                                            .sep = .sep,
-                                                            .preserve = .preserve))
+    add_op_single("unnest", .data, dots = dots, args = list(.id = .id))
+}
+
+#' Nest method for Kusto tables
+#'
+#' This method collapses a column into a list
+#'
+#' @param .data A kusto tbl.
+#' @param ... Specification of columns to nest. This translates to summarize make_list() in Kusto.
+#' @export
+nest.tbl_kusto_abstract <- function(.data, ...)
+{
+    dots <- quos(..., .named = TRUE)
+    dot_exprs <- mapply(get_expr, dots)
+    dot_names <- mapply(all_names, dot_exprs)
+    dot_calls <- mapply(function(x) expr(make_list(!!x)), dot_exprs)
+    group_cols <- setdiff(op_vars(.data), dot_names)
+    summarise(group_by(.data, !! as.name(group_cols)), !!! dot_calls)
 }
 
 #' @export
