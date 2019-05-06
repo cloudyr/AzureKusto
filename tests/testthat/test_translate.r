@@ -548,3 +548,40 @@ test_that("summarize hinting translates correctly",
     q_str <- q %>% show_query()
     expect_equal(q_str, kql("cluster('local_df').database('local_df').['iris']\n| summarize hint.shufflekey = ['SepalLength'] hint.shufflekey = ['SepalWidth'] hint.num_partitions = 2 ['MaxSepalLength'] = max(['SepalLength']) by ['Species']"))
 })
+
+test_that("unnest translates to mv-expand",
+{
+
+    list_df <- tibble::tibble(
+        x = 1:2,
+        y = list(a = 1, b = 3:4)
+        )
+
+    list_tbl <- tbl_kusto_abstract(list_df, table_name = "list_tbl")
+
+    q <- list_tbl %>%
+        unnest(y)
+
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("cluster('local_df').database('local_df').['list_tbl']\n| mv-expand ['y']"))
+
+})
+
+test_that("unnest .id translates to with_itemindex",
+{
+
+    list_df <- tibble::tibble(
+        x = 1:2,
+        y = list(a = 1, b = 3:4)
+        )
+
+    list_tbl <- tbl_kusto_abstract(list_df, table_name = "list_tbl")
+
+    q <- list_tbl %>%
+        unnest(y, .id = "name")
+
+    q_str <- show_query(q)
+
+    expect_equal(q_str, kql("cluster('local_df').database('local_df').['list_tbl']\n| mv-expand with_itemindex=['name'] ['y']"))
+
+})

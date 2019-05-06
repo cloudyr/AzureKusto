@@ -172,6 +172,18 @@ kql_build.op_ungroup <- function(op, ...)
 }
 
 #' @export
+kql_build.op_unnest <- function(op, ...)
+{
+    if (!is.null(op$args$.id))
+        with_itemindex <- build_kql("with_itemindex=", escape(ident(op$args$.id)), " ")
+    else
+        with_itemindex <- kql("")
+
+    cols_to_unnest <- translate_kql(!!! op$dots)
+    build_kql("mv-expand ", with_itemindex, build_kql(escape(cols_to_unnest, collapse = ", ")))
+}
+
+#' @export
 kql_build.op_head <- function(op, ...)
 {
     n <- lapply(op$args$n, translate_kql)

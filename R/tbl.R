@@ -137,6 +137,27 @@ summarise.tbl_kusto_abstract <- function(.data, ..., .strategy = NULL, .shufflek
                   args = list(.strategy = .strategy, .shufflekeys = .shufflekeys, .num_partitions = .num_partitions))
 }
 
+#' Unnest method for Kusto tables
+#'
+#' This method takes a list column and expands it so that each element of the list gets its own row.
+#' unnest() translates to Kusto's mv-expand operator.
+#'
+#' @param .data A Kusto tbl.
+#' @param ... Specification of columns to unnest.
+#' @param .drop Should additional list columns be dropped? By default, unnest will drop them if unnesting the specified columns requires the rows to be duplicated.
+#' @param .id Data frame identifier - if supplied, will create a new column with name .id, giving a unique identifier. This is most useful if the list column is named.
+#' @param .sep If non-NULL, the names of unnested data frame columns will combine the name of the original list-col with the names from nested data frame, separated by .sep.
+#' @param .preserve Optionally, list-columns to preserve in the output. These will be duplicated in the same way as atomic vectors.
+#' @export
+unnest.tbl_kusto_abstract <- function(.data, ..., .drop = NA, .id = NULL, .sep = NULL, .preserve = NULL)
+{
+    dots <- quos(...)
+    add_op_single("unnest", .data, dots = dots, args = list(.drop = .drop,
+                                                            .id = .id,
+                                                            .sep = .sep,
+                                                            .preserve = .preserve))
+}
+
 #' @export
 head.tbl_kusto_abstract <- function(x, n = 6L, ...)
 {
