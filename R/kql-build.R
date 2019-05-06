@@ -182,7 +182,6 @@ kql_build.op_unnest <- function(op, ...)
         with_itemindex <- kql("")
     }
 
-    #cols_to_unnest <- translate_kql(!!! op$dots)
     cols_to_unnest <- unname(tidyselect::vars_select(op_vars(op), !!! op$dots))
 
     if (is_empty(cols_to_unnest))

@@ -185,12 +185,12 @@ parse_command_result <- function(tables, .use_integer64)
 }
 
 
-convert_result_types <- function(df, coltypes_df, .use_integer64, .response_dynamic_serialization)
+convert_result_types <- function(df, coltypes_df, .use_integer64)
 {
     if(is_empty(df))
         return(list())
 
-    convert_kusto_datatype <- function(column, kusto_type, .use_integer64, .response_dynamic_serialization)
+    convert_kusto_datatype <- function(column, kusto_type, .use_integer64)
     {
         switch(kusto_type,
             long=, Int64=
