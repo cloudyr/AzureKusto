@@ -157,7 +157,7 @@ unnest.tbl_kusto_abstract <- function(.data, ..., .id = NULL)
 #' This method collapses a column into a list
 #'
 #' @param .data A kusto tbl.
-#' @param ... Specification of columns to nest. This translates to summarize make_list() in Kusto.
+#' @param ... Specification of columns to nest. Translates to summarize make_list() in Kusto.
 #' @export
 nest.tbl_kusto_abstract <- function(.data, ...)
 {

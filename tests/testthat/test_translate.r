@@ -560,7 +560,7 @@ test_that("unnest translates to mv-expand",
     list_tbl <- tbl_kusto_abstract(list_df, table_name = "list_tbl")
 
     q <- list_tbl %>%
-        unnest(y)
+        tidyr::unnest(y)
 
     q_str <- show_query(q)
     expect_equal(q_str, kql("cluster('local_df').database('local_df').['list_tbl']\n| mv-expand ['y']"))
@@ -578,7 +578,7 @@ test_that("unnest .id translates to with_itemindex",
     list_tbl <- tbl_kusto_abstract(list_df, table_name = "list_tbl")
 
     q <- list_tbl %>%
-        unnest(y, .id = "name")
+        tidyr::unnest(y, .id = "name")
 
     q_str <- show_query(q)
 
@@ -590,7 +590,7 @@ test_that("nest translates to summarize makelist()",
 {
 
     q <- tbl_iris %>%
-        nest(SepalLength, SepalWidth, PetalLength, PetalWidth)
+        tidyr::nest(SepalLength, SepalWidth, PetalLength, PetalWidth)
 
     q_str <- show_query(q)
     expect_equal(q_str, kql("cluster('local_df').database('local_df').['iris']\n| summarize ['SepalLength'] = make_list(['SepalLength']), ['SepalWidth'] = make_list(['SepalWidth']), ['PetalLength'] = make_list(['PetalLength']), ['PetalWidth'] = make_list(['PetalWidth']) by ['Species']"))
