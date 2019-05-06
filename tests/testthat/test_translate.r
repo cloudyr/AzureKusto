@@ -585,3 +585,14 @@ test_that("unnest .id translates to with_itemindex",
     expect_equal(q_str, kql("cluster('local_df').database('local_df').['list_tbl']\n| mv-expand with_itemindex=['name'] ['y']"))
 
 })
+
+test_that("nest translates to summarize makelist()",
+{
+
+    q <- tbl_iris %>%
+        nest(SepalLength, SepalWidth, PetalLength, PetalWidth)
+
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("cluster('local_df').database('local_df').['iris']\n| summarize ['SepalLength'] = make_list(['SepalLength']), ['SepalWidth'] = make_list(['SepalWidth']), ['PetalLength'] = make_list(['PetalLength']), ['PetalWidth'] = make_list(['PetalWidth']) by ['Species']"))
+
+})
