@@ -161,12 +161,19 @@ unnest.tbl_kusto_abstract <- function(.data, ..., .id = NULL)
 #' @export
 nest.tbl_kusto_abstract <- function(.data, ...)
 {
-    dots <- quos(..., .named = TRUE)
-    dot_exprs <- mapply(get_expr, dots)
-    dot_names <- mapply(all_names, dot_exprs)
-    dot_calls <- mapply(function(x) expr(make_list(!!x)), dot_exprs)
-    group_cols <- setdiff(op_vars(.data), dot_names)
-    summarise(group_by(.data, !! as.name(group_cols)), !!! dot_calls)
+    nest_vars <- unname(tidyselect::vars_select(op_vars(.data), ...))
+
+    if (is_empty(nest_vars))
+        nest_vars <- op_vars(.data)
+
+    group_vars <- union(op_grps(.data), setdiff(op_vars(.data), nest_vars))
+    nest_vars <- setdiff(nest_vars, group_vars)
+    dot_calls <- mapply(function(x) expr(make_list(!!as.name(x))), nest_vars)
+
+    if (is_empty(group_vars))
+        summarise(.data, !!! dot_calls)
+    else
+        summarise(group_by(.data, !! as.name(group_vars)), !!! dot_calls)        
 }
 
 #' @export

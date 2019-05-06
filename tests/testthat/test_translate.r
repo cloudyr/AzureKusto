@@ -596,3 +596,22 @@ test_that("nest translates to summarize makelist()",
     expect_equal(q_str, kql("cluster('local_df').database('local_df').['iris']\n| summarize ['SepalLength'] = make_list(['SepalLength']), ['SepalWidth'] = make_list(['SepalWidth']), ['PetalLength'] = make_list(['PetalLength']), ['PetalWidth'] = make_list(['PetalWidth']) by ['Species']"))
 
 })
+
+test_that("nest respects preceding group_by",
+{
+    q <- tbl_iris %>%
+        group_by(Species) %>%
+        tidyr::nest()
+
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("cluster('local_df').database('local_df').['iris']\n| summarize ['SepalLength'] = make_list(['SepalLength']), ['SepalWidth'] = make_list(['SepalWidth']), ['PetalLength'] = make_list(['PetalLength']), ['PetalWidth'] = make_list(['PetalWidth']) by ['Species']"))
+})
+
+test_that("nest nests all non-provided columns",
+{
+    q <- tbl_iris %>%
+        tidyr::nest(-Species)
+
+    q_str <- show_query(q)
+    expect_equal(q_str, kql("cluster('local_df').database('local_df').['iris']\n| summarize ['SepalLength'] = make_list(['SepalLength']), ['SepalWidth'] = make_list(['SepalWidth']), ['PetalLength'] = make_list(['PetalLength']), ['PetalWidth'] = make_list(['PetalWidth']) by ['Species']"))
+})
