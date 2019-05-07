@@ -176,6 +176,9 @@ parse_command_result <- function(tables, .use_integer64)
     if(inherits(tables, "response"))
         return(tables)
 
+    ## Command response only has DataType attribute, no ColumnType, so copy DataType into ColumnType.
+    tables$Columns[[1]]$ColumnType <- tables$Columns[[1]]$DataType
+
     res <- Map(convert_result_types, tables$Rows, coltypes_df=tables$Columns,
                MoreArgs=list(.use_integer64=.use_integer64))
 
@@ -199,7 +202,7 @@ convert_result_types <- function(df, coltypes_df, .use_integer64)
                 as.integer(column),
             datetime=, DateTime=
                 as.POSIXct(strptime(column, format='%Y-%m-%dT%H:%M:%OSZ', tz='UTC')),
-            real=, double=, float=, Double=, Float=
+            real=, double=, float=, decimal=, Decimal=, SqlDecimal=, Double=, Float=
                 as.numeric(column),
             bool=, Boolean=
                        as.logical(column),
