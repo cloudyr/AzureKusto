@@ -177,7 +177,8 @@ parse_command_result <- function(tables, .use_integer64)
         return(tables)
 
     ## Command response only has DataType attribute, no ColumnType, so copy DataType into ColumnType.
-    tables$Columns[[1]]$ColumnType <- tables$Columns[[1]]$DataType
+    if(!("ColumnType" %in% tables$Columns[[1]]))
+        tables$Columns[[1]]$ColumnType <- tables$Columns[[1]]$DataType
 
     res <- Map(convert_result_types, tables$Rows, coltypes_df=tables$Columns,
                MoreArgs=list(.use_integer64=.use_integer64))
